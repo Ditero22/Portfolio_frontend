@@ -1,3 +1,5 @@
+import { publicApiRefreshIntervalMs } from "@/shared/api";
+
 export const blogChangedEvent = "portfolio-blog-changed";
 
 export function notifyBlogChanged() {
@@ -33,7 +35,7 @@ export function watchBlogUpdates(
   onChange();
   const timer = window.setInterval(() => {
     if (!request) onChange();
-  }, 5000);
+  }, publicApiRefreshIntervalMs);
   window.addEventListener(blogChangedEvent, onChange);
   window.addEventListener("storage", onStorage);
   window.addEventListener("focus", onChange);

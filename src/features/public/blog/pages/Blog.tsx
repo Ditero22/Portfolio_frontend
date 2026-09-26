@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import BlogCard from "../components/BlogCard";
 import { getBlogPosts } from "../services/blog.service";
-import type { BlogPost } from "../types/blog";
+import type { BlogPostSummary } from "../types/blog";
 import { watchBlogUpdates } from "../services/blogUpdates";
 
 export default function Blog() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);

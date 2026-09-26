@@ -6,6 +6,7 @@ import {
 } from "../services/experience.service";
 import type { Experience } from "../types/experience";
 import ExperienceCard from "../components/ExperienceCard";
+import { publicApiRefreshIntervalMs } from "@/shared/api";
 
 export default function ExperiencePage() {
   const [experience, setExperience] = useState<Experience[]>([]);
@@ -46,7 +47,7 @@ export default function ExperiencePage() {
     onChange();
     const poll = window.setInterval(() => {
       if (!request) onChange();
-    }, 5000);
+    }, publicApiRefreshIntervalMs);
     window.addEventListener(experienceChangedEvent, onChange);
     window.addEventListener("storage", onStorage);
     window.addEventListener("focus", onChange);

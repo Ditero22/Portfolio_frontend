@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowDownRight,
-  ArrowUpRight,
   CalendarDays,
   Code2,
   GraduationCap,
   Layers3,
   MapPin,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { getHiringStatus } from "@/features/public/availability/services/availability.service";
+import { publicApiRefreshIntervalMs } from "@/shared/api";
 import profileFormal from "@/assets/profile-formal.png";
 import profileLookUp from "@/assets/profile-look-up.png";
 import profileLookSide from "@/assets/profile-look-side.png";
@@ -110,7 +110,7 @@ function ProfilePortrait() {
         />
         <span className="landing-portrait-index">01 / 04</span>
       </div>
-      <div className="landing-portrait-caption mt-3">
+      <div className="landing-portrait-caption mt-6 md:mt-7">
         <span className="h-2 w-2 rounded-full bg-teal-400" />
         <span>IT GRADUATE · DEVELOPER</span>
       </div>
@@ -159,12 +159,7 @@ function LandingHero() {
             <span>Flutter &amp; Dart</span>
           </div>
           <div className="landing-hero-actions">
-            <Link
-              to="/projects"
-              className="landing-primary-action"
-            >
-              Explore my work <ArrowUpRight size={16} />
-            </Link>
+            <HiringStatus />
             <a
               href="mailto:karldietherortega@gmail.com"
               className="landing-secondary-action"
@@ -181,6 +176,61 @@ function LandingHero() {
         <span>BUILD WITH CURIOSITY</span>
       </div>
     </section>
+  );
+}
+
+function HiringStatus() {
+  const [isHired, setIsHired] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  const refresh = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const status = await getHiringStatus(signal);
+      if (!signal?.aborted) setIsHired(status.isHired);
+    } catch {
+      // Keep the default available status when the settings service is offline.
+    } finally {
+      if (!signal?.aborted) setLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void Promise.resolve().then(() => refresh(controller.signal));
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refresh();
+    }, publicApiRefreshIntervalMs);
+    const onChanged = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === "portfolio-hiring-status-changed") void refresh();
+    };
+    window.addEventListener("portfolio-hiring-status-changed", onChanged);
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onChanged);
+    return () => {
+      controller.abort();
+      window.clearInterval(timer);
+      window.removeEventListener("portfolio-hiring-status-changed", onChanged);
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onChanged);
+    };
+  }, [refresh]);
+
+  return (
+    <span
+      className={`landing-status-pill ${isHired ? "is-hired" : "is-available"}`}
+      role="status"
+      aria-live="polite"
+    >
+      <span className="landing-status-dot" />
+      {loaded
+        ? isHired
+          ? "Currently hired"
+          : "Available for work"
+        : "Checking availability"}
+    </span>
   );
 }
 

@@ -12,6 +12,10 @@ export interface BlogPost {
   updatedAt: string;
 }
 
+export type BlogPostSummary = Omit<BlogPost, "content"> & {
+  content?: string;
+};
+
 export interface BlogPostForm {
   title: string;
   excerpt: string;

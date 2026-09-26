@@ -14,8 +14,9 @@ const secondaryNavigation = [
   { label: "Projects", path: "/projects" },
   { label: "Experience", path: "/experience" },
   { label: "Stack", path: "/stack" },
-  { label: "Certification", path: "/certification" },
-  { label: "Recommendation", path: "/recommendation" },
+  { label: "Certifications", path: "/certifications" },
+  { label: "Recommendations", path: "/recommendations" },
+  { label: "Skills", path: "/skills" },
 ];
 
 const tertiaryNavigation = [
@@ -27,9 +28,11 @@ const adminNavigation = [
   { label: "Blog", path: "/admin/manage/blog" },
   { label: "Projects", path: "/admin/manage/projects" },
   { label: "Experience", path: "/admin/manage/experience" },
+  { label: "Stack", path: "/admin/manage/stack" },
   { label: "Skills", path: "/admin/manage/skills" },
   { label: "Certifications", path: "/admin/manage/certifications" },
   { label: "Recommendations", path: "/admin/manage/recommendations" },
+  { label: "Settings", path: "/admin/settings" },
   { label: "Messages", path: "/admin/manage/messages" },
 ];
 

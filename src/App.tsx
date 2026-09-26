@@ -30,6 +30,25 @@ const ExperienceManagement = lazy(
   () => import("./features/admin/manage/experience"),
 );
 const AdminDashboard = lazy(() => import("./features/admin/dashboard"));
+const StackPage = lazy(() => import("./features/public/stack"));
+const CertificationsPage = lazy(
+  () => import("./features/public/certifications"),
+);
+const RecommendationsPage = lazy(
+  () => import("./features/public/recommendations"),
+);
+const SkillsPage = lazy(() => import("./features/public/skills"));
+const StackManagement = lazy(() => import("./features/admin/manage/stack"));
+const CertificationsManagement = lazy(
+  () => import("./features/admin/manage/certifications"),
+);
+const RecommendationsManagement = lazy(
+  () => import("./features/admin/manage/recommendations"),
+);
+const SkillsManagement = lazy(() => import("./features/admin/manage/skills"));
+const SettingsManagement = lazy(
+  () => import("./features/admin/manage/settings"),
+);
 
 const BlogManagement = lazy(
   () => import("./features/admin/manage/blog/pages/BlogManagement"),
@@ -91,6 +110,10 @@ const router = createBrowserRouter([
       createRoute("/resources", <ResourcesPage />),
       createRoute("/projects", <ProjectsPage />),
       createRoute("/experience", <ExperiencePage />),
+      createRoute("/stack", <StackPage />),
+      createRoute("/certifications", <CertificationsPage />),
+      createRoute("/recommendations", <RecommendationsPage />),
+      createRoute("/skills", <SkillsPage />),
 
       createProtectedRoute("/admin", <AdminDashboard />),
       createProtectedRoute("/admin/manage/blog", <BlogManagement />),
@@ -99,6 +122,17 @@ const router = createBrowserRouter([
         "/admin/manage/experience",
         <ExperienceManagement />,
       ),
+      createProtectedRoute("/admin/manage/stack", <StackManagement />),
+      createProtectedRoute(
+        "/admin/manage/certifications",
+        <CertificationsManagement />,
+      ),
+      createProtectedRoute(
+        "/admin/manage/recommendations",
+        <RecommendationsManagement />,
+      ),
+      createProtectedRoute("/admin/manage/skills", <SkillsManagement />),
+      createProtectedRoute("/admin/settings", <SettingsManagement />),
     ],
   },
 

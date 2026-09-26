@@ -65,6 +65,90 @@
   }
 }
 
+.landing-status-pill {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.landing-status-pill.is-available {
+  color: #0f9b83;
+}
+.landing-status-pill.is-hired {
+  color: #d28a27;
+}
+.landing-status-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 32%, transparent);
+  animation: landing-status-pulse 2s ease-out infinite;
+}
+@keyframes landing-status-pulse {
+  65% {
+    box-shadow: 0 0 0 0.5rem transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-status-dot {
+    animation: none;
+  }
+}
+
+.public-live-viewers {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 80;
+  display: inline-flex;
+  min-height: 2.6rem;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 13%, transparent);
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: color-mix(in srgb, var(--page) 88%, transparent);
+  color: var(--foreground);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 12%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  backdrop-filter: blur(14px);
+}
+.public-live-viewers-icon {
+  display: inline-flex;
+  color: #0f9b83;
+}
+.public-live-viewers-label {
+  color: color-mix(in srgb, var(--foreground) 58%, transparent);
+}
+.public-live-viewers-live {
+  margin-left: 0.1rem;
+  border-radius: 999px;
+  background: rgb(20 184 166 / 12%);
+  padding: 0.2rem 0.4rem;
+  color: #0f9b83;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 480px) {
+  .public-live-viewers {
+    right: 0.65rem;
+    bottom: 0.65rem;
+  }
+}
+
 /* ==========================================
    FONT VARIABLES
    ========================================== */

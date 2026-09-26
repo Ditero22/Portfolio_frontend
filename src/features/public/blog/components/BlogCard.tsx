@@ -1,10 +1,10 @@
 import { ArrowUpRight } from "lucide-react";
 import { safeMediaUrl } from "../types/content";
-import type { BlogPost } from "../types/blog";
+import type { BlogPostSummary } from "../types/blog";
 import { Link } from "react-router-dom";
 
 interface BlogCardProps {
-  post: BlogPost;
+  post: BlogPostSummary;
 }
 
 function BlogCard({ post }: BlogCardProps) {

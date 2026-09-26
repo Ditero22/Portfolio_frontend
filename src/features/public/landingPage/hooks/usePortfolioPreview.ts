@@ -9,6 +9,7 @@ import {
 } from "../../experience/services/experience.service";
 import type { Project } from "../../projects/types/project";
 import type { Experience } from "../../experience/types/experience";
+import { publicApiRefreshIntervalMs } from "@/shared/api";
 
 export function usePortfolioPreview() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -58,7 +59,7 @@ export function usePortfolioPreview() {
     update();
     const timer = window.setInterval(() => {
       if (!request) update();
-    }, 5000);
+    }, publicApiRefreshIntervalMs);
     window.addEventListener(projectsChangedEvent, update);
     window.addEventListener(experienceChangedEvent, update);
     window.addEventListener("storage", storage);

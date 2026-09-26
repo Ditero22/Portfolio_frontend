@@ -5,6 +5,7 @@ import {
   projectsChangedEvent,
 } from "../services/projects.service";
 import type { Project } from "../types/project";
+import { publicApiRefreshIntervalMs } from "@/shared/api";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -41,7 +42,7 @@ export default function ProjectsPage() {
     onChange();
     const poll = window.setInterval(() => {
       if (!request) onChange();
-    }, 5000);
+    }, publicApiRefreshIntervalMs);
     window.addEventListener(projectsChangedEvent, onChange);
     window.addEventListener("storage", onStorage);
     window.addEventListener("focus", onChange);
