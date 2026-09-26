@@ -64,7 +64,7 @@ export default function ExperiencePage() {
   }, []);
 
   return (
-    <main className="mx-auto w-full max-w-4xl pb-12 pt-10 md:pt-16">
+    <main className="mx-auto w-full max-w-4xl pb-12">
       <header className="relative overflow-hidden rounded-2xl border border-ink/10 bg-surface/70 p-7 md:p-10">
         <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full border border-ink/10" />
         <p className="font-mono text-xs uppercase tracking-[0.24em] text-ink/50">
