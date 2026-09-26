@@ -1,1 +1,1 @@
-export { default } from './PageSkeleton';
+export { default } from "./PageSkeleton";

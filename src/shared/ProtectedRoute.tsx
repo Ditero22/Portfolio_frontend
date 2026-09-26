@@ -6,9 +6,7 @@ interface ProtectedRouteProps {
   allowedRoles: Role[];
 }
 
-export default function ProtectedRoute({
-  allowedRoles,
-}: ProtectedRouteProps) {
+export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   const location = useLocation();
   const { user, isBootstrapping } = useAuthSession();
 
@@ -27,7 +25,12 @@ export default function ProtectedRoute({
   }
 
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return (
+      <Navigate
+        to="/"
+        replace
+      />
+    );
   }
 
   return <Outlet />;

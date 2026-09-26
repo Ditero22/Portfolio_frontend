@@ -20,15 +20,15 @@ function Table<T>({
   emptyMessage = "No data found.",
 }: TableProps<T>) {
   return (
-    <div className="w-full overflow-hidden rounded-md border border-white/10">
+    <div className="w-full overflow-hidden rounded-md border border-ink/10">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] border-collapse">
           <thead>
-            <tr className="border-b border-white/10 bg-white/[0.03]">
+            <tr className="border-b border-ink/10 bg-ink/[0.03]">
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className="px-4 py-3 text-left text-xs font-normal uppercase tracking-wider text-white/40"
+                  className="px-4 py-3 text-left text-xs font-normal uppercase tracking-wider text-ink/40"
                 >
                   {column.label}
                 </th>
@@ -41,7 +41,7 @@ function Table<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-8 text-center text-sm text-white/40"
+                  className="px-4 py-8 text-center text-sm text-ink/40"
                 >
                   {emptyMessage}
                 </td>
@@ -50,12 +50,12 @@ function Table<T>({
               data.map((item) => (
                 <tr
                   key={getRowKey(item)}
-                  className="border-b border-white/10 last:border-b-0 transition hover:bg-white/[0.02]"
+                  className="border-b border-ink/10 last:border-b-0 transition hover:bg-ink/[0.02]"
                 >
                   {columns.map((column) => (
                     <td
                       key={column.key}
-                      className="px-4 py-4 text-sm text-white/70"
+                      className="px-4 py-4 text-sm text-ink/70"
                     >
                       {column.render(item)}
                     </td>

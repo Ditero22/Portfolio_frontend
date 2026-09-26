@@ -1,8 +1,4 @@
-import {
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { useState, type ReactNode } from "react";
 
 import type { AuthUser } from "../../../types/auth";
 import { AuthContext } from "./AuthContext";
@@ -17,20 +13,10 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isBootstrapping, setIsBootstrapping] = useState(true);
-
-  useEffect(() => {
-    const accessToken = getAccessToken();
-
-    if (accessToken) {
-      setUser({
-        role: "admin",
-      });
-    }
-
-    setIsBootstrapping(false);
-  }, []);
+  const [user, setUser] = useState<AuthUser | null>(() =>
+    getAccessToken() ? { role: "admin" } : null,
+  );
+  const isBootstrapping = false;
 
   function login(authUser: AuthUser, accessToken?: string) {
     setUser(authUser);

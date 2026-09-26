@@ -1,105 +1,74 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-
 import { getBlogPostBySlug } from "../services/blog.service";
-import type { BlogPost as BlogPostType } from "../types/blog";
+import type { BlogPost as Post } from "../types/blog";
+import BlogArticle from "../components/BlogArticle";
+import { watchBlogUpdates } from "../services/blogUpdates";
 
-function BlogPost() {
+export default function BlogPost() {
   const { slug } = useParams();
-  const [post, setPost] = useState<BlogPostType | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadPost() {
-      if (!slug) {
-        setIsLoading(false);
-        return;
-      }
-
-      const data = await getBlogPostBySlug(slug);
-      setPost(data);
-      setIsLoading(false);
-    }
-
-    loadPost();
-  }, [slug]);
-
-  if (isLoading) {
-    return (
-      <div className="mx-auto w-full max-w-3xl text-sm text-white/40">
-        Loading post...
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div className="mx-auto w-full max-w-3xl">
-        <Link
-          to="/blog"
-          className="text-sm text-white/50 transition hover:text-white"
-        >
-          ← Back to Blog
-        </Link>
-
-        <h1
-          className="mt-8 text-4xl text-white"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          Blog post not found
-        </h1>
-      </div>
-    );
-  }
-
-  const date = new Date(post.createdAt).toLocaleDateString(
-    "en-US",
-    {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    },
-  );
-
+  // Remount the loader for each slug so previous requests cannot replace a new article.
   return (
-    <article className="mx-auto w-full max-w-3xl">
-      <Link
-        to="/blog"
-        className="text-sm text-white/50 transition hover:text-white"
-      >
-        ← Back to Blog
-      </Link>
-
-      <div className="mt-8">
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-white/40">
-            {date}
-          </span>
-
-          <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wider text-white/50">
-            {post.category}
-          </span>
-        </div>
-
-        <h1
-          className="mt-5 text-4xl text-white md:text-5xl"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          {post.title}
-        </h1>
-
-        <p className="mt-4 text-base leading-7 text-white/55">
-          {post.excerpt}
-        </p>
-
-        <div className="mt-8 border-t border-white/10 pt-8">
-          <div className="whitespace-pre-line text-sm leading-7 text-white/70">
-            {post.content}
-          </div>
-        </div>
-      </div>
-    </article>
+    <ArticleLoader
+      key={slug}
+      slug={slug}
+    />
   );
 }
 
-export default BlogPost;
+function ArticleLoader({ slug }: { slug?: string }) {
+  const [post, setPost] = useState<Post>();
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    return watchBlogUpdates(async (signal) => {
+      try {
+        const data = await getBlogPostBySlug(slug ?? "", signal);
+        if (!signal.aborted) {
+          setPost(data);
+          setError("");
+        }
+      } catch {
+        if (!signal.aborted)
+          setError("Could not load this post. Retrying automatically.");
+      } finally {
+        if (!signal.aborted) setIsLoading(false);
+      }
+    });
+  }, [slug, attempt]);
+  return (
+    <div className="mx-auto w-full max-w-3xl space-y-8">
+      <Link
+        to="/blog"
+        className="text-sm text-ink/70 hover:underline"
+      >
+        ← Back to Blog
+      </Link>
+      {isLoading ? (
+        <p className="text-sm text-ink/60">Loading post…</p>
+      ) : error ? (
+        <div
+          role="alert"
+          className="space-y-3 text-ink"
+        >
+          <p>{error}</p>
+          <button
+            className="rounded border border-ink/20 px-3 py-2"
+            onClick={() => {
+              setError("");
+              setIsLoading(true);
+              setAttempt((n) => n + 1);
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      ) : post ? (
+        <BlogArticle post={post} />
+      ) : (
+        <h1 className="text-4xl text-ink">Blog post not found</h1>
+      )}
+    </div>
+  );
+}

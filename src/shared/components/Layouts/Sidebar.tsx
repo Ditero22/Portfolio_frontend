@@ -1,3 +1,4 @@
+import ThemeToggle from "../../theme/ThemeToggle";
 import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
@@ -18,17 +19,14 @@ const secondaryNavigation = [
 ];
 
 const tertiaryNavigation = [
-  { label: "Mode", path: "/sample" },
-  { label: "Dark / Light", path: "/sample" },
-  { label: "Sample", path: "/sample" },
-  { label: "Sample", path: "/sample" },
-  { label: "Email", path: "/sample" },
+  { label: "karldietherortega@gmail.com", path: "/sample" },
 ];
 
 const adminNavigation = [
   { label: "Dashboard", path: "/admin", end: true },
   { label: "Blog", path: "/admin/manage/blog" },
   { label: "Projects", path: "/admin/manage/projects" },
+  { label: "Experience", path: "/admin/manage/experience" },
   { label: "Skills", path: "/admin/manage/skills" },
   { label: "Certifications", path: "/admin/manage/certifications" },
   { label: "Recommendations", path: "/admin/manage/recommendations" },
@@ -36,6 +34,7 @@ const adminNavigation = [
 ];
 
 interface SidebarNavLinkProps {
+  small?: boolean;
   label: string;
   path: string;
   end?: boolean;
@@ -43,6 +42,7 @@ interface SidebarNavLinkProps {
 }
 
 interface NavigationListProps {
+  small?: boolean;
   items: {
     label: string;
     path: string;
@@ -52,6 +52,7 @@ interface NavigationListProps {
 }
 
 function SidebarNavLink({
+  small = false,
   label,
   path,
   end = false,
@@ -63,17 +64,19 @@ function SidebarNavLink({
       end={end}
       onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center gap-2 rounded-md px-2 py-1 text-sm transition duration-200 ${
+        `flex items-center gap-2 rounded-md px-2 py-1 ${small ? "text-xs" : "text-sm"} transition duration-200 ${
           isActive
-            ? "text-white"
-            : "text-white/60 hover:bg-white/[0.06] hover:text-white"
+            ? "text-ink"
+            : "text-ink/60 hover:bg-ink/[0.06] hover:text-ink"
         }`
       }
     >
       {({ isActive }) => (
         <>
           {isActive && <span>→</span>}
-          <span>{label}</span>
+          <span className={small ? "min-w-0 break-words" : undefined}>
+            {label}
+          </span>
         </>
       )}
     </NavLink>
@@ -81,6 +84,7 @@ function SidebarNavLink({
 }
 
 function NavigationList({
+  small = false,
   items,
   onClick,
 }: NavigationListProps) {
@@ -88,6 +92,7 @@ function NavigationList({
     <div className="flex flex-col gap-0.5">
       {items.map((item) => (
         <SidebarNavLink
+          small={small}
           key={item.path}
           label={item.label}
           path={item.path}
@@ -99,16 +104,12 @@ function NavigationList({
   );
 }
 
-function LogoutButton({
-  onLogout,
-}: {
-  onLogout: () => void;
-}) {
+function LogoutButton({ onLogout }: { onLogout: () => void }) {
   return (
     <button
       type="button"
       onClick={onLogout}
-      className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm text-white/60 transition duration-200 hover:bg-white/[0.06] hover:text-white"
+      className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm text-ink/60 transition duration-200 hover:bg-ink/[0.06] hover:text-ink"
     >
       <span>→</span>
       <span>Logout</span>
@@ -139,13 +140,12 @@ function Sidebar() {
 
   return (
     <>
-      {/* Mobile Header */}
-      <header className="fixed left-0 top-0 z-[100] flex h-12 w-full items-center border-b border-white/10 bg-[#020202] px-3 md:hidden">
+      <header className="fixed left-0 top-0 z-[100] flex h-12 w-full items-center border-b border-ink/10 bg-paper px-3 md:hidden">
         <NavLink
           to={isAdmin ? "/admin" : "/"}
           end
           onClick={closeMobileMenu}
-          className="text-xl text-white transition hover:text-white/70"
+          className="text-xl text-ink transition hover:text-ink/70"
           style={{ fontFamily: "var(--font-display)" }}
         >
           {sidebarTitle}
@@ -154,7 +154,7 @@ function Sidebar() {
         <button
           type="button"
           onClick={() => setIsOpen((previous) => !previous)}
-          className="absolute right-4 flex h-6 w-6 items-center justify-center text-2xl text-white transition hover:text-white/70"
+          className="absolute right-4 flex h-6 w-6 items-center justify-center text-2xl text-ink transition hover:text-ink/70"
           aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
         >
@@ -167,7 +167,7 @@ function Sidebar() {
           fixed left-0 top-12 z-[90]
           flex h-[calc(100dvh-3rem)] w-full flex-col
           overflow-hidden
-          bg-[#020202]
+          bg-paper
           transition-transform duration-500 ease-in-out
           md:hidden
           ${isOpen ? "translate-y-0" : "-translate-y-full"}
@@ -182,7 +182,10 @@ function Sidebar() {
               />
             </nav>
 
-            <div className="shrink-0 border-t border-white/10 px-6 py-4">
+            <div className="shrink-0 border-t border-ink/10 px-6 py-4">
+              <div className="mb-3">
+                <ThemeToggle />
+              </div>
               <LogoutButton onLogout={handleLogout} />
             </div>
           </>
@@ -203,9 +206,13 @@ function Sidebar() {
               />
             </nav>
 
-            <div className="shrink-0 border-t border-white/10 px-6 py-4">
+            <div className="shrink-0 border-t border-ink/10 px-6 py-4">
+              <div className="mb-3">
+                <ThemeToggle />
+              </div>
               <NavigationList
                 items={tertiaryNavigation}
+                small
                 onClick={closeMobileMenu}
               />
             </div>
@@ -218,8 +225,8 @@ function Sidebar() {
           fixed left-0 top-0 z-50
           hidden h-screen w-60
           flex-col
-          border-r border-white/10
-          bg-[#020202]/70
+          border-r border-ink/10
+          bg-paper/70
           px-6 py-8
           md:flex
         "
@@ -228,7 +235,7 @@ function Sidebar() {
           <NavLink
             to={isAdmin ? "/admin" : "/"}
             end
-            className="text-2xl text-white transition hover:text-white/70"
+            className="text-2xl text-ink transition hover:text-ink/70"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {sidebarTitle}
@@ -243,7 +250,10 @@ function Sidebar() {
             </nav>
 
             {/* Admin Logout */}
-            <div className="mt-6 shrink-0 border-t border-white/10 pt-4">
+            <div className="mt-6 shrink-0 border-t border-ink/10 pt-4">
+              <div className="mb-3">
+                <ThemeToggle />
+              </div>
               <LogoutButton onLogout={handleLogout} />
             </div>
           </>
@@ -258,8 +268,14 @@ function Sidebar() {
             </nav>
 
             {/* Public Tertiary Navigation */}
-            <div className="mt-2 shrink-0 border-t border-white/10 pt-3">
-              <NavigationList items={tertiaryNavigation} />
+            <div className="mt-2 shrink-0 border-t border-ink/10 pt-5">
+              <div className="mb-3">
+                <ThemeToggle />
+              </div>
+              <NavigationList
+                items={tertiaryNavigation}
+                small
+              />
             </div>
           </>
         )}
@@ -268,4 +284,4 @@ function Sidebar() {
   );
 }
 
-export default Sidebar; 
+export default Sidebar;

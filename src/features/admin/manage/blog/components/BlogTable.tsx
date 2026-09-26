@@ -10,42 +10,42 @@ interface BlogTableProps {
   onDelete: (post: BlogPost) => void;
 }
 
-function BlogTable({
-  posts,
-  onView,
-  onEdit,
-  onDelete,
-}: BlogTableProps) {
+function BlogTable({ posts, onView, onEdit, onDelete }: BlogTableProps) {
   const columns = [
+    {
+      key: "image",
+      label: "Image",
+      render: (post: BlogPost) =>
+        post.imageUrl ? (
+          <img
+            src={post.imageUrl}
+            alt={post.title}
+            loading="lazy"
+            className="h-12 w-20 rounded object-cover"
+          />
+        ) : (
+          <span className="text-ink/50">No image</span>
+        ),
+    },
     {
       key: "title",
       label: "Title",
       render: (post: BlogPost) => (
-        <span className="text-white">
-          {post.title}
-        </span>
+        <span className="text-ink">{post.title}</span>
       ),
     },
     {
       key: "category",
       label: "Category",
       render: (post: BlogPost) => (
-        <span className="text-white/60">
-          {post.category}
-        </span>
+        <span className="text-ink/60">{post.category}</span>
       ),
     },
     {
       key: "status",
       label: "Status",
       render: (post: BlogPost) => (
-        <span
-          className={
-            post.published
-              ? "text-white"
-              : "text-white/40"
-          }
-        >
+        <span className={post.published ? "text-ink" : "text-ink/40"}>
           {post.published ? "Published" : "Draft"}
         </span>
       ),
@@ -54,15 +54,12 @@ function BlogTable({
       key: "date",
       label: "Date",
       render: (post: BlogPost) => (
-        <span className="text-white/60">
-          {new Date(post.createdAt).toLocaleDateString(
-            "en-US",
-            {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            },
-          )}
+        <span className="text-ink/60">
+          {new Date(post.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
         </span>
       ),
     },
@@ -74,7 +71,7 @@ function BlogTable({
           <button
             type="button"
             onClick={() => onView(post)}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-white/40 transition hover:bg-white/[0.06] hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-ink/40 transition hover:bg-ink/[0.06] hover:text-ink"
             aria-label={`View ${post.title}`}
           >
             <Eye size={16} />
@@ -83,7 +80,7 @@ function BlogTable({
           <button
             type="button"
             onClick={() => onEdit(post)}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-white/40 transition hover:bg-white/[0.06] hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-ink/40 transition hover:bg-ink/[0.06] hover:text-ink"
             aria-label={`Edit ${post.title}`}
           >
             <Pencil size={16} />
@@ -92,7 +89,7 @@ function BlogTable({
           <button
             type="button"
             onClick={() => onDelete(post)}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-white/40 transition hover:bg-white/[0.06] hover:text-red-400"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-ink/40 transition hover:bg-ink/[0.06] hover:text-red-400"
             aria-label={`Delete ${post.title}`}
           >
             <Trash2 size={16} />
