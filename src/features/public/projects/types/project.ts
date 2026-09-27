@@ -8,6 +8,21 @@ export const projectCategories = [
 
 export type ProjectCategory = (typeof projectCategories)[number]["value"];
 export type ProjectStatus = "completed" | "in-progress" | "planned";
+export const projectContributionKinds = [
+  { value: "built", label: "I built" },
+  { value: "designed", label: "I designed" },
+  { value: "supported", label: "I supported" },
+  { value: "team", label: "Team handled" },
+] as const;
+
+export type ProjectContributionKind =
+  (typeof projectContributionKinds)[number]["value"];
+
+export interface ProjectContribution {
+  kind: ProjectContributionKind;
+  title: string;
+  details?: string;
+}
 
 export interface Project {
   id: string;
@@ -19,6 +34,7 @@ export interface Project {
   fullDescription?: string | null;
   stack: string[];
   highlights: string[];
+  contributions?: ProjectContribution[] | null;
   coverImageUrl?: string | null;
   images?: string[];
   status?: ProjectStatus;

@@ -1,4 +1,7 @@
-import type { Project } from "@/features/public/projects/types/project";
+import type {
+  Project,
+  ProjectContribution,
+} from "@/features/public/projects/types/project";
 
 export type ProjectInput = {
   slug: string;
@@ -9,6 +12,7 @@ export type ProjectInput = {
   fullDescription: string;
   stack: string[];
   highlights: string[];
+  contributions: ProjectContribution[];
   coverImageUrl: string;
   images: string[];
   status: NonNullable<Project["status"]>;

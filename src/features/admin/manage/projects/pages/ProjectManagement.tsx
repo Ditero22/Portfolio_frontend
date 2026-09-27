@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Plus } from "lucide-react";
 import { API_URL } from "@/shared/api";
 import { Modal } from "@/shared/components/ui";
 import { getAccessToken } from "@/features/auth/services/authStorage";
-import type { Project } from "@/features/public/projects/types/project";
+import type {
+  Project,
+  ProjectContribution,
+} from "@/features/public/projects/types/project";
+import { projectCategories } from "@/features/public/projects/types/project";
 import { notifyProjectsChanged } from "@/features/public/projects/services/projects.service";
+import ProjectContributionMap from "@/features/public/projects/components/ProjectContributionMap";
+import { uploadProjectImage } from "../services/projectMedia.service";
 import ProjectFormFields from "../components/ProjectFormFields";
 import ProjectTable from "../components/ProjectTable";
 import type { ProjectInput } from "../types/projectInput";
@@ -27,6 +34,10 @@ export default function ProjectManagement() {
     null,
   );
   const [pendingSave, setPendingSave] = useState<ProjectInput | null>(null);
+  const [pendingCoverImage, setPendingCoverImage] = useState<File | null>(null);
+  const [uploadedCoverImageUrl, setUploadedCoverImageUrl] = useState<
+    string | null
+  >(null);
   const [pendingOrder, setPendingOrder] = useState<Project[] | null>(null);
   const [orderError, setOrderError] = useState<string | null>(null);
   const orderedItems = items
@@ -105,6 +116,8 @@ export default function ProjectManagement() {
     if (!submittingRef.current) {
       setShowForm(false);
       setPendingSave(null);
+      setPendingCoverImage(null);
+      setUploadedCoverImageUrl(null);
     }
   }
 
@@ -116,10 +129,32 @@ export default function ProjectManagement() {
     const title = value("title");
     const role = value("role");
     const description = value("description");
+    const coverImage = data.get("coverImageFile");
     if (!title || !role || !description) {
       setFormError("Enter a title, role, and description.");
       return;
     }
+    setPendingCoverImage(
+      coverImage instanceof File && coverImage.size > 0 ? coverImage : null,
+    );
+    const contributionJson = data.get("contributions");
+    if (typeof contributionJson !== "string") {
+      setFormError("Could not read the project contribution details.");
+      return;
+    }
+
+    let contributions: ProjectContribution[];
+    try {
+      const parsedContributions: unknown = JSON.parse(contributionJson);
+      if (!Array.isArray(parsedContributions)) {
+        throw new Error("Contribution details must be a list.");
+      }
+      contributions = parsedContributions as ProjectContribution[];
+    } catch {
+      setFormError("Check the project contribution details and try again.");
+      return;
+    }
+
     setFormError(null);
     setPendingSave({
       slug: value("slug"),
@@ -136,6 +171,7 @@ export default function ProjectManagement() {
         .split(/\r?\n/)
         .map((item) => item.trim())
         .filter(Boolean),
+      contributions,
       coverImageUrl: value("coverImageUrl"),
       images: value("images")
         .split(/\r?\n/)
@@ -155,6 +191,15 @@ export default function ProjectManagement() {
     setIsSubmitting(true);
     setFormError(null);
     try {
+      let projectData = pendingSave;
+      if (pendingCoverImage) {
+        const imageUrl = await uploadProjectImage(pendingCoverImage);
+        projectData = { ...pendingSave, coverImageUrl: imageUrl };
+        setPendingSave(projectData);
+        setPendingCoverImage(null);
+        setUploadedCoverImageUrl(imageUrl);
+      }
+
       const response = await fetch(
         `${API_URL}/projects${editing ? `/${encodeURIComponent(editing.id)}` : ""}`,
         {
@@ -163,7 +208,7 @@ export default function ProjectManagement() {
             Authorization: `Bearer ${getAccessToken()}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(pendingSave),
+          body: JSON.stringify(projectData),
         },
       );
       if (!response.ok)
@@ -266,14 +311,17 @@ export default function ProjectManagement() {
         <button
           type="button"
           disabled={updatingVisibility !== null}
-          className="rounded bg-ink px-4 py-2 text-paper disabled:opacity-50"
+          className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-ink px-4 text-sm font-medium text-paper transition hover:bg-ink/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 disabled:opacity-50"
           onClick={() => {
             setEditing(null);
             setFormError(null);
+            setPendingCoverImage(null);
+            setUploadedCoverImageUrl(null);
             setShowForm(true);
           }}
         >
-          New Project
+          <Plus size={16} aria-hidden="true" />
+          Add project
         </button>
       </div>
       {loadError && (
@@ -293,6 +341,8 @@ export default function ProjectManagement() {
         onEdit={(project) => {
           setEditing(project);
           setFormError(null);
+          setPendingCoverImage(null);
+          setUploadedCoverImageUrl(null);
           setShowForm(true);
         }}
         onRequestVisibilityChange={(project) => {
@@ -361,27 +411,78 @@ export default function ProjectManagement() {
       <Modal
         isOpen={showForm}
         onClose={closeForm}
-        title={editing ? "Edit Project" : "New Project"}
-        size="lg"
+        title={
+          pendingSave
+            ? editing
+              ? "Review Project Changes"
+              : "Review New Project"
+            : editing
+              ? "Edit Project"
+              : "Add Project"
+        }
+        size="xl"
       >
         {pendingSave && (
           <div
             className="space-y-5 text-ink"
             aria-busy={isSubmitting}
           >
-            <p>
-              {editing ? "Save changes to" : "Create"} “{pendingSave.title}”
-              with {pendingSave.published ? "public" : "hidden"} visibility?
+            <p className="text-sm text-ink/65">
+              Check the summary before saving. The project will be{" "}
+              {pendingSave.published ? "visible" : "hidden"} on your portfolio.
             </p>
+            <div className="rounded-2xl border border-ink/10 bg-paper/50 p-4 sm:p-5">
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-teal-700 dark:text-teal-300">
+                {projectCategories.find(
+                  (category) => category.value === pendingSave.category,
+                )?.label ?? pendingSave.category}
+                {" · "}
+                {pendingSave.status.replaceAll("-", " ")}
+              </p>
+              <h3 className="mt-2 text-2xl text-ink">{pendingSave.title}</h3>
+              <p className="mt-1 text-sm text-ink/55">
+                {pendingSave.role} · {pendingSave.published ? "Public" : "Hidden"}
+              </p>
+              <p className="mt-4 text-sm leading-6 text-ink/70">
+                {pendingSave.description}
+              </p>
+              <dl className="mt-4 grid gap-3 border-t border-ink/10 pt-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <dt className="text-ink/45">Technologies</dt>
+                  <dd className="mt-1 font-medium text-ink">
+                    {pendingSave.stack.length || "None added"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-ink/45">Images</dt>
+                  <dd className="mt-1 font-medium text-ink">
+                    {pendingSave.images.length +
+                      (pendingSave.coverImageUrl || pendingCoverImage ? 1 : 0)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-ink/45">Implementation notes</dt>
+                  <dd className="mt-1 font-medium text-ink">
+                    {pendingSave.highlights.length}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-ink/45">Contribution details</dt>
+                  <dd className="mt-1 font-medium text-ink">
+                    {pendingSave.contributions.length}
+                  </dd>
+                </div>
+              </dl>
+            </div>
             {formError && (
               <p
                 role="alert"
-                className="text-sm text-red-500"
+                className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-600 dark:text-red-300"
               >
                 {formError}
               </p>
             )}
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
               <button
                 type="button"
                 disabled={isSubmitting}
@@ -389,26 +490,39 @@ export default function ProjectManagement() {
                   setPendingSave(null);
                   setFormError(null);
                 }}
-                className="rounded-md border border-ink/20 px-4 py-2 disabled:opacity-50"
+                className="min-h-11 rounded-xl border border-ink/15 px-4 text-sm transition hover:border-ink/35 disabled:opacity-50"
               >
-                Back
+                Back to editing
               </button>
               <button
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => void saveProject()}
-                className="rounded-md bg-ink px-4 py-2 text-paper disabled:opacity-50"
+                className="min-h-11 rounded-xl bg-ink px-5 text-sm font-medium text-paper transition hover:bg-ink/85 disabled:opacity-50"
               >
-                {isSubmitting ? "Saving…" : "Confirm"}
+               {isSubmitting
+                  ? pendingCoverImage
+                    ? "Uploading image…"
+                    : "Saving…"
+                  : editing
+                    ? "Confirm changes"
+                    : "Create project"}
               </button>
             </div>
           </div>
         )}
         <ProjectFormFields
+          key={editing?.id ?? "new"}
           editing={editing}
           formError={formError}
           hidden={pendingSave !== null}
           isSubmitting={isSubmitting}
+          pendingCoverImage={pendingCoverImage}
+          uploadedCoverImageUrl={uploadedCoverImageUrl}
+          onCoverFileChange={(file) => {
+            setPendingCoverImage(file);
+            setUploadedCoverImageUrl(null);
+          }}
           onCancel={closeForm}
           onSubmit={prepareSave}
         />
@@ -518,6 +632,9 @@ export default function ProjectManagement() {
                 <p className="mt-2">No highlights added.</p>
               )}
             </div>
+            <ProjectContributionMap
+              contributions={viewing.contributions ?? []}
+            />
           </div>
         )}
       </Modal>

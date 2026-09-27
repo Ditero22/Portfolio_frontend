@@ -1,4 +1,5 @@
 import { ArrowUpRight, Code2, ExternalLink, Star } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { Project } from "../types/project";
 
 const categoryLabels: Record<string, string> = {
@@ -87,6 +88,13 @@ export default function ProjectCard({
           <p className="mt-4 max-w-2xl text-sm leading-7 text-ink/70">
             {project.description}
           </p>
+          <Link
+            to={`/projects/${encodeURIComponent(project.slug ?? project.id)}`}
+            className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-full border border-ink/15 px-4 text-xs text-ink/70 transition hover:border-teal-500/50 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+          >
+            Explore project
+            <ArrowUpRight size={14} aria-hidden="true" />
+          </Link>
           {project.fullDescription && (
             <p className="mt-3 max-w-3xl whitespace-pre-line text-sm leading-7 text-ink/60">
               {project.fullDescription}

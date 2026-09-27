@@ -22,6 +22,9 @@ const BlogPostPage = lazy(
 const GearPage = lazy(() => import("./features/public/gear"));
 const ResourcesPage = lazy(() => import("./features/public/resources"));
 const ProjectsPage = lazy(() => import("./features/public/projects"));
+const ProjectDetailsPage = lazy(
+  () => import("./features/public/projects/pages/ProjectDetails"),
+);
 const ProjectManagement = lazy(
   () => import("./features/admin/manage/projects"),
 );
@@ -109,6 +112,7 @@ const router = createBrowserRouter([
       createRoute("/gear", <GearPage />),
       createRoute("/resources", <ResourcesPage />),
       createRoute("/projects", <ProjectsPage />),
+      createRoute("/projects/:slug", <ProjectDetailsPage />),
       createRoute("/experience", <ExperiencePage />),
       createRoute("/stack", <StackPage />),
       createRoute("/certifications", <CertificationsPage />),
