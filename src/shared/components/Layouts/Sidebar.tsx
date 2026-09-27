@@ -1,63 +1,77 @@
-import ThemeToggle from "../../theme/ThemeToggle";
+import {
+  Award,
+  BookOpen,
+  Bookmark,
+  BriefcaseBusiness,
+  Code2,
+  FolderKanban,
+  Layers3,
+  LayoutDashboard,
+  LogOut,
+  MessageSquareQuote,
+  Monitor,
+  Newspaper,
+  Settings,
+  type LucideIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuthSession } from "../../../features/auth/hooks/useAuthSession";
+import ThemeToggle from "../../theme/ThemeToggle";
+import SocialLinks from "./SocialLinks";
 
 const primaryNavigation = [
-  { label: "Blog", path: "/blog" },
-  { label: "Gear", path: "/gear" },
-  { label: "Resources", path: "/resources" },
+  { label: "Blog", path: "/blog", icon: Newspaper },
+  { label: "Gear", path: "/gear", icon: Monitor },
+  { label: "Resources", path: "/resources", icon: Bookmark },
 ];
 
 const secondaryNavigation = [
-  { label: "Projects", path: "/projects" },
-  { label: "Experience", path: "/experience" },
-  { label: "Stack", path: "/stack" },
-  { label: "Certifications", path: "/certifications" },
-  { label: "Recommendations", path: "/recommendations" },
-  { label: "Skills", path: "/skills" },
-];
-
-const tertiaryNavigation = [
-  { label: "karldietherortega@gmail.com", path: "/sample" },
+  { label: "Projects", path: "/projects", icon: FolderKanban },
+  { label: "Experience", path: "/experience", icon: BriefcaseBusiness },
+  { label: "Stack", path: "/stack", icon: Layers3 },
+  { label: "Certifications", path: "/certifications", icon: Award },
+  { label: "Recommendations", path: "/recommendations", icon: MessageSquareQuote },
+  { label: "Skills", path: "/skills", icon: Code2 },
 ];
 
 const adminNavigation = [
-  { label: "Dashboard", path: "/admin", end: true },
-  { label: "Blog", path: "/admin/manage/blog" },
-  { label: "Projects", path: "/admin/manage/projects" },
-  { label: "Experience", path: "/admin/manage/experience" },
-  { label: "Stack", path: "/admin/manage/stack" },
-  { label: "Skills", path: "/admin/manage/skills" },
-  { label: "Certifications", path: "/admin/manage/certifications" },
-  { label: "Recommendations", path: "/admin/manage/recommendations" },
-  { label: "Settings", path: "/admin/settings" },
-  { label: "Messages", path: "/admin/manage/messages" },
+  { label: "Dashboard", path: "/admin", end: true, icon: LayoutDashboard },
+  { label: "Blog", path: "/admin/manage/blog", icon: Newspaper },
+  { label: "Projects", path: "/admin/manage/projects", icon: FolderKanban },
+  { label: "Experience", path: "/admin/manage/experience", icon: BriefcaseBusiness },
+  { label: "Stack", path: "/admin/manage/stack", icon: Layers3 },
+  { label: "Skills", path: "/admin/manage/skills", icon: Code2 },
+  { label: "Certifications", path: "/admin/manage/certifications", icon: Award },
+  { label: "Recommendations", path: "/admin/manage/recommendations", icon: MessageSquareQuote },
+  { label: "Settings", path: "/admin/settings", icon: Settings },
+  { label: "Messages", path: "/admin/manage/messages", icon: BookOpen },
 ];
 
 interface SidebarNavLinkProps {
-  small?: boolean;
   label: string;
   path: string;
+  icon: LucideIcon;
   end?: boolean;
   onClick?: () => void;
 }
 
 interface NavigationListProps {
-  small?: boolean;
+  label: string;
   items: {
     label: string;
     path: string;
+    icon: LucideIcon;
     end?: boolean;
   }[];
   onClick?: () => void;
 }
 
 function SidebarNavLink({
-  small = false,
   label,
   path,
+  icon: Icon,
   end = false,
   onClick,
 }: SidebarNavLinkProps) {
@@ -67,43 +81,68 @@ function SidebarNavLink({
       end={end}
       onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center gap-2 rounded-md px-2 py-1 ${small ? "text-xs" : "text-sm"} transition duration-200 ${
-          isActive
-            ? "text-ink"
-            : "text-ink/60 hover:bg-ink/[0.06] hover:text-ink"
-        }`
+        `sidebar-nav-link${isActive ? " is-active" : ""}`
       }
     >
       {({ isActive }) => (
         <>
-          {isActive && <span>→</span>}
-          <span className={small ? "min-w-0 break-words" : undefined}>
-            {label}
+          <span className="sidebar-nav-link__icon">
+            <Icon
+              size={15}
+              strokeWidth={isActive ? 2 : 1.7}
+              aria-hidden="true"
+            />
           </span>
+          <span className="sidebar-nav-link__label">{label}</span>
+          {isActive && <span className="sidebar-nav-link__marker" />}
         </>
       )}
     </NavLink>
   );
 }
 
-function NavigationList({
-  small = false,
-  items,
-  onClick,
-}: NavigationListProps) {
+function NavigationList({ label, items, onClick }: NavigationListProps) {
   return (
-    <div className="flex flex-col gap-0.5">
-      {items.map((item) => (
-        <SidebarNavLink
-          small={small}
-          key={item.path}
-          label={item.label}
-          path={item.path}
-          end={item.end}
-          onClick={onClick}
-        />
-      ))}
-    </div>
+    <section className="sidebar-nav-group">
+      <p className="sidebar-nav-group__label">{label}</p>
+      <div className="flex flex-col gap-1">
+        {items.map((item) => (
+          <SidebarNavLink
+            key={item.path}
+            label={item.label}
+            path={item.path}
+            icon={item.icon}
+            end={item.end}
+            onClick={onClick}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SidebarBrand({ isAdmin }: { isAdmin: boolean }) {
+  const title = isAdmin ? "Admin" : "Diether";
+
+  return (
+    <NavLink
+      to={isAdmin ? "/admin" : "/"}
+      end
+      className={`sidebar-brand${isAdmin ? "" : " sidebar-brand--public"}`}
+      aria-label={`${title} home`}
+    >
+      <span className="sidebar-brand__mark">D</span>
+      <span className="sidebar-brand__copy">
+        {isAdmin && (
+          <span className="sidebar-brand__eyebrow">PRIVATE WORKSPACE</span>
+        )}
+        <span className="sidebar-brand__name">{title}</span>
+        {isAdmin && (
+          <span className="sidebar-brand__caption">Content studio</span>
+        )}
+      </span>
+      <span className="sidebar-brand__arrow" aria-hidden="true">↗</span>
+    </NavLink>
   );
 }
 
@@ -112,24 +151,22 @@ function LogoutButton({ onLogout }: { onLogout: () => void }) {
     <button
       type="button"
       onClick={onLogout}
-      className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm text-ink/60 transition duration-200 hover:bg-ink/[0.06] hover:text-ink"
+      className="sidebar-nav-link sidebar-nav-link--button"
     >
-      <span>→</span>
-      <span>Logout</span>
+      <span className="sidebar-nav-link__icon">
+        <LogOut size={15} strokeWidth={1.7} aria-hidden="true" />
+      </span>
+      <span className="sidebar-nav-link__label">Logout</span>
     </button>
   );
 }
 
 function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-
   const location = useLocation();
   const navigate = useNavigate();
-
   const { logout } = useAuthSession();
-
   const isAdmin = location.pathname.startsWith("/admin");
-  const sidebarTitle = isAdmin ? "Admin" : "Diether";
 
   const closeMobileMenu = () => {
     setIsOpen(false);
@@ -143,21 +180,21 @@ function Sidebar() {
 
   return (
     <>
-      <header className="fixed left-0 top-0 z-[100] flex h-12 w-full items-center border-b border-ink/10 bg-paper px-3 md:hidden">
+      <header className="sidebar-mobile-header fixed left-0 top-0 z-[100] flex h-12 w-full items-center px-3 md:hidden">
         <NavLink
           to={isAdmin ? "/admin" : "/"}
           end
           onClick={closeMobileMenu}
-          className="text-xl text-ink transition hover:text-ink/70"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="sidebar-mobile-brand"
         >
-          {sidebarTitle}
+          <span className="sidebar-mobile-brand__mark">D</span>
+          <span>{isAdmin ? "Admin" : "Diether"}</span>
         </NavLink>
 
         <button
           type="button"
           onClick={() => setIsOpen((previous) => !previous)}
-          className="absolute right-4 flex h-6 w-6 items-center justify-center text-2xl text-ink transition hover:text-ink/70"
+          className="sidebar-mobile-menu-button absolute right-4 flex h-8 w-8 items-center justify-center"
           aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
         >
@@ -166,122 +203,78 @@ function Sidebar() {
       </header>
 
       <div
-        className={`
-          fixed left-0 top-12 z-[90]
-          flex h-[calc(100dvh-3rem)] w-full flex-col
-          overflow-hidden
-          bg-paper
-          transition-transform duration-500 ease-in-out
-          md:hidden
-          ${isOpen ? "translate-y-0" : "-translate-y-full"}
-        `}
+        className={`sidebar-mobile-menu fixed left-0 top-12 z-[90] flex h-[calc(100dvh-3rem)] w-full flex-col overflow-hidden transition-transform duration-500 ease-in-out md:hidden ${
+          isOpen ? "translate-y-0" : "-translate-y-full"
+        }`}
       >
         {isAdmin ? (
-          <>
-            <nav className="flex-1 px-6 py-6">
-              <NavigationList
-                items={adminNavigation}
-                onClick={closeMobileMenu}
-              />
-            </nav>
-
-            <div className="shrink-0 border-t border-ink/10 px-6 py-4">
-              <div className="mb-3">
-                <ThemeToggle />
-              </div>
-              <LogoutButton onLogout={handleLogout} />
-            </div>
-          </>
+          <nav className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            <NavigationList
+              label="Workspace"
+              items={adminNavigation}
+              onClick={closeMobileMenu}
+            />
+          </nav>
         ) : (
-          <>
-            {/* Mobile Primary + Secondary */}
-            <nav className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
-              <NavigationList
-                items={primaryNavigation}
-                onClick={closeMobileMenu}
-              />
-
-              <div className="h-6" />
-
-              <NavigationList
-                items={secondaryNavigation}
-                onClick={closeMobileMenu}
-              />
-            </nav>
-
-            <div className="shrink-0 border-t border-ink/10 px-6 py-4">
-              <div className="mb-3">
-                <ThemeToggle />
-              </div>
-              <NavigationList
-                items={tertiaryNavigation}
-                small
-                onClick={closeMobileMenu}
-              />
-            </div>
-          </>
+          <nav className="sidebar-scroll min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            <NavigationList
+              label="Navigate"
+              items={primaryNavigation}
+              onClick={closeMobileMenu}
+            />
+            <NavigationList
+              label="Explore the portfolio"
+              items={secondaryNavigation}
+              onClick={closeMobileMenu}
+            />
+          </nav>
         )}
+
+        <div className="sidebar-mobile-footer shrink-0 px-6 py-4">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <span className="sidebar-footer-label">Appearance</span>
+            <ThemeToggle />
+          </div>
+          {isAdmin ? (
+            <LogoutButton onLogout={handleLogout} />
+          ) : (
+            <SocialLinks />
+          )}
+        </div>
       </div>
 
-      <aside
-        className="
-          fixed left-0 top-0 z-50
-          hidden h-screen w-60
-          flex-col
-          border-r border-ink/10
-          bg-paper/70
-          px-6 py-8
-          md:flex
-        "
-      >
-        <div className="mb-6 shrink-0">
-          <NavLink
-            to={isAdmin ? "/admin" : "/"}
-            end
-            className="text-2xl text-ink transition hover:text-ink/70"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            {sidebarTitle}
-          </NavLink>
-        </div>
+      <aside className="portfolio-sidebar fixed left-0 top-0 z-50 hidden h-screen w-60 flex-col px-5 py-6 md:flex">
+        <SidebarBrand isAdmin={isAdmin} />
 
-        {isAdmin ? (
-          <>
-            {/* Admin Navigation */}
-            <nav className="flex-1">
-              <NavigationList items={adminNavigation} />
-            </nav>
-
-            {/* Admin Logout */}
-            <div className="mt-6 shrink-0 border-t border-ink/10 pt-4">
-              <div className="mb-3">
-                <ThemeToggle />
-              </div>
-              <LogoutButton onLogout={handleLogout} />
-            </div>
-          </>
-        ) : (
-          <>
-            <nav className="sidebar-scroll h-[45%] overflow-y-auto pr-1">
-              <NavigationList items={primaryNavigation} />
-
-              <div className="h-6" />
-
-              <NavigationList items={secondaryNavigation} />
-            </nav>
-
-            {/* Public Tertiary Navigation */}
-            <div className="mt-2 shrink-0 border-t border-ink/10 pt-5">
-              <div className="mb-3">
-                <ThemeToggle />
-              </div>
+        <nav className="sidebar-scroll mt-7 min-h-0 flex-1 overflow-y-auto pr-1">
+          {isAdmin ? (
+            <NavigationList label="Workspace" items={adminNavigation} />
+          ) : (
+            <>
+              <NavigationList label="Navigate" items={primaryNavigation} />
               <NavigationList
-                items={tertiaryNavigation}
-                small
+                label="Explore the portfolio"
+                items={secondaryNavigation}
               />
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </nav>
+
+        <div className="sidebar-desktop-footer mt-5 shrink-0 pt-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="sidebar-footer-label">Appearance</span>
+            <ThemeToggle />
+          </div>
+          {isAdmin ? (
+            <LogoutButton onLogout={handleLogout} />
+          ) : (
+            <SocialLinks />
+          )}
+          <div className="sidebar-footer-signature">
+            <span>DESIGNED & BUILT</span>
+            <span>WITH CURIOSITY <span aria-hidden="true">✳</span></span>
+          </div>
+        </div>
       </aside>
     </>
   );

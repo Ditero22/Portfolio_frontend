@@ -5,7 +5,7 @@ export default function StackPage() {
     <PortfolioContentPage
       config={{
         kind: "stack",
-        number: "05",
+        number: "06",
         title: "Stack",
         eyebrow: "Tools I use",
         description:

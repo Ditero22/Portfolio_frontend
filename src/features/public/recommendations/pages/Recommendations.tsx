@@ -5,7 +5,7 @@ export default function RecommendationsPage() {
     <PortfolioContentPage
       config={{
         kind: "recommendations",
-        number: "07",
+        number: "08",
         title: "Recommendations",
         eyebrow: "Words from others",
         description:

@@ -7,6 +7,7 @@ import {
 import type { Experience } from "../types/experience";
 import ExperienceCard from "../components/ExperienceCard";
 import { publicApiRefreshIntervalMs } from "@/shared/api";
+import PublicPageFrame from "@/shared/components/Layouts/PublicPageFrame";
 
 export default function ExperiencePage() {
   const [experience, setExperience] = useState<Experience[]>([]);
@@ -64,34 +65,27 @@ export default function ExperiencePage() {
   }, []);
 
   return (
-    <main className="mx-auto w-full max-w-4xl pb-12">
-      <header className="relative overflow-hidden rounded-2xl border border-ink/10 bg-surface/70 p-7 md:p-10">
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full border border-ink/10" />
-        <p className="font-mono text-xs uppercase tracking-[0.24em] text-ink/50">
-          Career journey
-        </p>
-        <h1 className="mt-3 text-5xl leading-none text-ink md:text-6xl">
-          Experience
-        </h1>
-        <p className="mt-5 max-w-2xl text-sm leading-7 text-ink/70">
-          The roles, teams, and work that have shaped my professional journey.
-        </p>
-      </header>
+    <PublicPageFrame
+      number="02"
+      eyebrow="Career journey"
+      title="Experience"
+      description="The roles, teams, and work that have shaped my professional journey."
+    >
       {error && (
         <p
           role="status"
-          className="mt-6 text-sm text-ink/60"
+          className="public-page-notice"
         >
           Experience could not be refreshed. Retrying automatically.
         </p>
       )}
       {loading && (
-        <p className="mt-6 text-sm text-ink/60">Loading experience…</p>
+        <p className="public-content-empty">Loading experience…</p>
       )}
       {!loading && !error && experience.length === 0 && (
-        <p className="mt-6 text-sm text-ink/60">No experience published yet.</p>
+        <p className="public-content-empty">No experience published yet.</p>
       )}
-      <div className="mt-6 grid gap-5">
+      <div className="public-page-list">
         {experience.map((item) => (
           <ExperienceCard
             key={item.id}
@@ -99,6 +93,6 @@ export default function ExperiencePage() {
           />
         ))}
       </div>
-    </main>
+    </PublicPageFrame>
   );
 }

@@ -110,9 +110,11 @@ function ProfilePortrait() {
         />
         <span className="landing-portrait-index">01 / 04</span>
       </div>
-      <div className="landing-portrait-caption mt-6 md:mt-7">
-        <span className="h-2 w-2 rounded-full bg-teal-400" />
-        <span>IT GRADUATE · DEVELOPER</span>
+      <div className="landing-portrait-caption">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-teal-400" />
+          <span>IT GRADUATE · DEVELOPER</span>
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import BlogCard from "../components/BlogCard";
 import { getBlogPosts } from "../services/blog.service";
 import type { BlogPostSummary } from "../types/blog";
 import { watchBlogUpdates } from "../services/blogUpdates";
+import PublicPageFrame from "@/shared/components/Layouts/PublicPageFrame";
 
 export default function Blog() {
   const [posts, setPosts] = useState<BlogPostSummary[]>([]);
@@ -26,20 +27,18 @@ export default function Blog() {
     });
   }, [attempt]);
   return (
-    <section className="mx-auto mb-16 w-full max-w-2xl md:mb-0 md:pt-1">
-      <header className="mb-8">
-        <h1 className="text-4xl text-ink md:text-5xl">Blog</h1>
-        <p className="mt-2 text-sm leading-6 text-ink/70">
-          Thoughts, notes, and things I learn while building projects and
-          exploring technology.
-        </p>
-      </header>
+    <PublicPageFrame
+      number="05"
+      eyebrow="Notes and experiments"
+      title="Blog"
+      description="Thoughts, notes, and things I learn while building projects and exploring technology."
+    >
       {isLoading ? (
-        <p className="text-sm text-ink/60">Loading posts…</p>
+        <p className="public-content-empty">Loading posts…</p>
       ) : error ? (
         <div
           role="alert"
-          className="space-y-3 text-ink"
+          className="public-content-empty public-content-empty--error"
         >
           <p>{error}</p>
           <button
@@ -54,7 +53,7 @@ export default function Blog() {
           </button>
         </div>
       ) : posts.length ? (
-        <div className="flex flex-col gap-4">
+        <div className="public-page-list">
           {posts.map((post) => (
             <BlogCard
               key={post.id}
@@ -63,10 +62,10 @@ export default function Blog() {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-ink/60">
+        <p className="public-content-empty">
           No published posts yet. Check back soon.
         </p>
       )}
-    </section>
+    </PublicPageFrame>
   );
 }

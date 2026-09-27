@@ -5,7 +5,7 @@ export default function CertificationsPage() {
     <PortfolioContentPage
       config={{
         kind: "certifications",
-        number: "06",
+        number: "07",
         title: "Certifications",
         eyebrow: "Learning milestones",
         description:

@@ -38,37 +38,39 @@ function ArticleLoader({ slug }: { slug?: string }) {
     });
   }, [slug, attempt]);
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-8">
-      <Link
-        to="/blog"
-        className="text-sm text-ink/70 hover:underline"
-      >
-        ← Back to Blog
-      </Link>
-      {isLoading ? (
-        <p className="text-sm text-ink/60">Loading post…</p>
-      ) : error ? (
-        <div
-          role="alert"
-          className="space-y-3 text-ink"
+    <main className="public-page public-page--article">
+      <div className="public-page-article">
+        <Link
+          to="/blog"
+          className="public-page-back-link"
         >
-          <p>{error}</p>
-          <button
-            className="rounded border border-ink/20 px-3 py-2"
-            onClick={() => {
-              setError("");
-              setIsLoading(true);
-              setAttempt((n) => n + 1);
-            }}
+          ← Back to Blog
+        </Link>
+        {isLoading ? (
+          <p className="public-content-empty">Loading post…</p>
+        ) : error ? (
+          <div
+            role="alert"
+            className="public-content-empty public-content-empty--error"
           >
-            Retry
-          </button>
-        </div>
-      ) : post ? (
-        <BlogArticle post={post} />
-      ) : (
-        <h1 className="text-4xl text-ink">Blog post not found</h1>
-      )}
-    </div>
+            <p>{error}</p>
+            <button
+              className="w-fit rounded border border-ink/20 px-3 py-2 text-sm transition hover:border-teal-500"
+              onClick={() => {
+                setError("");
+                setIsLoading(true);
+                setAttempt((n) => n + 1);
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        ) : post ? (
+          <BlogArticle post={post} />
+        ) : (
+          <h1 className="text-4xl text-ink">Blog post not found</h1>
+        )}
+      </div>
+    </main>
   );
 }

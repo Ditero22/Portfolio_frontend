@@ -9,6 +9,7 @@ import { resourceGroups } from "../../resources/data/resources";
 import GearCard from "../../gear/components/GearCard";
 import ResourceCard from "../../resources/components/ResourceCard";
 import ExperiencePreview from "./ExperiencePreview";
+import PortfolioContentPreviews from "./PortfolioContentPreviews";
 
 function SectionHeading({
   number,
@@ -149,6 +150,7 @@ export default function PortfolioPreview() {
             ))}
         </CardCarousel>
       </section>
+      <PortfolioContentPreviews />
     </div>
   );
 }

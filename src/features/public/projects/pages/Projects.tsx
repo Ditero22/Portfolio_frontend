@@ -6,6 +6,7 @@ import {
 } from "../services/projects.service";
 import type { Project } from "../types/project";
 import { publicApiRefreshIntervalMs } from "@/shared/api";
+import PublicPageFrame from "@/shared/components/Layouts/PublicPageFrame";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -59,29 +60,21 @@ export default function ProjectsPage() {
   }, []);
 
   return (
-    <main className="mx-auto w-full max-w-4xl pb-12  ">
-      <header className="relative overflow-hidden rounded-2xl border border-ink/10 bg-surface/70 p-7 md:p-10">
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full border border-ink/10" />
-        <p className="font-mono text-xs uppercase tracking-[0.24em] text-ink/50">
-          Selected work
-        </p>
-        <h1 className="mt-3 text-5xl leading-none text-ink md:text-6xl">
-          Projects
-        </h1>
-        <p className="mt-5 max-w-2xl text-sm leading-7 text-ink/70">
-          A selection of projects where I turn ideas into practical tools and
-          keep learning through the process.
-        </p>
-      </header>
+    <PublicPageFrame
+      number="01"
+      eyebrow="Selected work"
+      title="Projects"
+      description="A selection of projects where I turn ideas into practical tools and keep learning through the process."
+    >
       {error && (
         <p
           role="status"
-          className="mt-6 text-sm text-ink/60"
+          className="public-page-notice"
         >
           Projects could not be refreshed. Retrying automatically.
         </p>
       )}
-      <div className="mt-6 grid gap-5">
+      <div className="public-page-list">
         {projects.map((project, index) => (
           <ProjectCard
             key={project.id}
@@ -90,6 +83,6 @@ export default function ProjectsPage() {
           />
         ))}
       </div>
-    </main>
+    </PublicPageFrame>
   );
 }

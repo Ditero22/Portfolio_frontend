@@ -5,7 +5,7 @@ export default function SkillsPage() {
     <PortfolioContentPage
       config={{
         kind: "skills",
-        number: "08",
+        number: "09",
         title: "Skills",
         eyebrow: "Frontend and backend",
         description:
