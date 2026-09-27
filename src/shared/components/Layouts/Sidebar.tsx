@@ -19,6 +19,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuthSession } from "../../../features/auth/hooks/useAuthSession";
 import ThemeToggle from "../../theme/ThemeToggle";
+import { Modal } from "../ui";
 import SocialLinks from "./SocialLinks";
 
 const primaryNavigation = [
@@ -163,6 +164,8 @@ function LogoutButton({ onLogout }: { onLogout: () => void }) {
 
 function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] =
+    useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuthSession();
@@ -172,9 +175,14 @@ function Sidebar() {
     setIsOpen(false);
   };
 
-  const handleLogout = () => {
+  const requestLogout = () => {
+    setIsLogoutConfirmationOpen(true);
+  };
+
+  const confirmLogout = () => {
     logout();
     closeMobileMenu();
+    setIsLogoutConfirmationOpen(false);
     navigate("/", { replace: true });
   };
 
@@ -236,7 +244,7 @@ function Sidebar() {
             <ThemeToggle />
           </div>
           {isAdmin ? (
-            <LogoutButton onLogout={handleLogout} />
+            <LogoutButton onLogout={requestLogout} />
           ) : (
             <SocialLinks />
           )}
@@ -266,7 +274,7 @@ function Sidebar() {
             <ThemeToggle />
           </div>
           {isAdmin ? (
-            <LogoutButton onLogout={handleLogout} />
+            <LogoutButton onLogout={requestLogout} />
           ) : (
             <SocialLinks />
           )}
@@ -276,6 +284,33 @@ function Sidebar() {
           </div>
         </div>
       </aside>
+
+      <Modal
+        isOpen={isLogoutConfirmationOpen}
+        onClose={() => setIsLogoutConfirmationOpen(false)}
+        title="Confirm logout"
+        size="sm"
+      >
+        <div className="space-y-5 text-ink">
+          <p>Are you sure you want to sign out of your admin session?</p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsLogoutConfirmationOpen(false)}
+              className="rounded-lg border border-ink/15 px-4 py-2 text-sm transition hover:bg-ink/5"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmLogout}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700"
+            >
+              Log out
+            </button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }
