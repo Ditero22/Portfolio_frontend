@@ -2116,7 +2116,7 @@ select option {
 }
 .landing-portrait-frame {
   position: relative;
-  width: min(100%, 17rem);
+  width: min(100%, 15rem);
   height: 20rem;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent);
@@ -2146,10 +2146,16 @@ select option {
   border-radius: 9.5rem 9.5rem 2rem 2rem;
 }
 .landing-portrait-orbit--outer {
-  inset: 0.2rem 0.35rem 3.2rem;
+  inset-block: 0.2rem 3.2rem;
+  left: 50%;
+  width: min(16.5rem, calc(100% - 1.5rem));
+  transform: translateX(-50%);
 }
 .landing-portrait-orbit--inner {
-  inset: 0.7rem 0.85rem 3.45rem;
+  inset-block: 0.7rem 3.45rem;
+  left: 50%;
+  width: min(15.75rem, calc(100% - 2rem));
+  transform: translateX(-50%);
   border-color: color-mix(in srgb, var(--foreground) 6%, transparent);
 }
 .landing-portrait-index {
@@ -2270,7 +2276,7 @@ select option {
     justify-content: flex-start;
   }
   .landing-portrait-frame {
-    width: 17rem;
+    width: 15rem;
     height: 21rem;
   }
 }
