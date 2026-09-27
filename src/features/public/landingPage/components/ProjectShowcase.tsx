@@ -43,9 +43,14 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
               />
             )}
             <div className="mb-7 flex items-center justify-between gap-3">
-              <span className="rounded-full border border-teal-500/25 bg-teal-500/10 px-3 py-1 font-mono text-[9px] uppercase tracking-wider">
-                {project.role}
-              </span>
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full border border-teal-500/25 bg-teal-500/10 px-3 py-1 font-mono text-[9px] uppercase tracking-wider">
+                  {project.category ?? "web"}
+                </span>
+                <span className="rounded-full border border-ink/10 px-3 py-1 font-mono text-[9px] uppercase tracking-wider text-ink/50">
+                  {project.role}
+                </span>
+              </div>
               <span className="font-mono text-xs text-ink/35">
                 0{index + 1}
               </span>

@@ -272,7 +272,7 @@ function Sidebar() {
           )}
           <div className="sidebar-footer-signature">
             <span>DESIGNED & BUILT</span>
-            <span>WITH CURIOSITY <span aria-hidden="true">✳</span></span>
+            <span>BUILT FOR REAL USE <span aria-hidden="true">✳</span></span>
           </div>
         </div>
       </aside>

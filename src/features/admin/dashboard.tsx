@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  Activity,
   Archive,
-  ArrowDownToLine,
   Eye,
   FileText,
   FolderKanban,
@@ -11,17 +9,27 @@ import {
   UsersRound,
 } from "lucide-react";
 import {
-  downloadVisitorLogs,
   getAdminAnalytics,
   type AdminAnalytics,
 } from "./services/analytics.service";
 
-const dayInMs = 24 * 60 * 60 * 1000;
 const r2MonthlyIncludedBytes = 10_000_000_000;
-
-function dateInputValue(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
+const viewerPeriods = [
+  { value: "day", label: "Day", key: "today", detail: "Today · UTC" },
+  {
+    value: "week",
+    label: "Week",
+    key: "thisWeek",
+    detail: "Monday to today · UTC",
+  },
+  {
+    value: "month",
+    label: "Month",
+    key: "thisMonth",
+    detail: "This month · UTC",
+  },
+] as const;
+type ViewerPeriod = (typeof viewerPeriods)[number]["value"];
 
 function formatBytes(bytes: number) {
   if (bytes < 1000) return `${bytes} B`;
@@ -98,20 +106,8 @@ function MetricCard({
 function Dashboard() {
   const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dateBounds] = useState(() => {
-    const today = new Date();
-    return {
-      earliest: dateInputValue(new Date(today.getTime() - 89 * dayInMs)),
-      latest: dateInputValue(today),
-    };
-  });
-  const [logFrom, setLogFrom] = useState(() =>
-    dateInputValue(new Date(Date.now() - 89 * dayInMs)),
-  );
-  const [logTo, setLogTo] = useState(() => dateInputValue(new Date()));
-  const [logPath, setLogPath] = useState("");
+  const [viewerPeriod, setViewerPeriod] = useState<ViewerPeriod>("day");
 
   const refresh = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -150,63 +146,9 @@ function Dashboard() {
     };
   }, [refresh]);
 
-  async function exportLogs() {
-    if (logFrom > logTo) {
-      setError("The start date must be on or before the end date.");
-      return;
-    }
-    if (logFrom < dateBounds.earliest || logTo > dateBounds.latest) {
-      setError("Choose dates within the available 90-day log window.");
-      return;
-    }
-
-    setDownloading(true);
-    setError(null);
-    try {
-      const file = await downloadVisitorLogs({
-        from: logFrom,
-        to: logTo,
-        path: logPath,
-      });
-      const url = URL.createObjectURL(file);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `portfolio-visitor-logs-${logFrom}-to-${logTo}.csv`;
-      document.body.append(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
-    } catch (downloadError) {
-      setError(
-        downloadError instanceof Error
-          ? downloadError.message
-          : "Could not download visitor logs.",
-      );
-    } finally {
-      setDownloading(false);
-    }
-  }
-
-  const visitorMetrics = [
-    {
-      label: "Today",
-      value: analytics?.visitors.today ?? "—",
-      detail: "Unique visitors · UTC day",
-      Icon: Eye,
-    },
-    {
-      label: "This week",
-      value: analytics?.visitors.thisWeek ?? "—",
-      detail: "Unique visitors · Monday to today",
-      Icon: UsersRound,
-    },
-    {
-      label: "This month",
-      value: analytics?.visitors.thisMonth ?? "—",
-      detail: "Unique visitors · UTC month",
-      Icon: Activity,
-    },
-  ];
+  const selectedViewerPeriod = viewerPeriods.find(
+    (period) => period.value === viewerPeriod,
+  )!;
   const storageBytes =
     analytics?.storage.available && analytics.storage.bytes !== null
       ? analytics.storage.bytes
@@ -256,19 +198,63 @@ function Dashboard() {
       )}
 
       <section className="mb-10">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-xl text-ink">Visitor activity</h2>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl text-ink">Visitor activity</h2>
+            <p className="mt-1 text-xs text-ink/50">
+              Unique viewers in the selected time range.
+            </p>
+          </div>
           <span className="font-mono text-[10px] uppercase tracking-wider text-ink/40">
             Refreshes every minute
           </span>
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {visitorMetrics.map((metric) => (
-            <MetricCard
-              key={metric.label}
-              {...metric}
-            />
-          ))}
+        <div className="grid gap-4 lg:grid-cols-[1fr_1.25fr]">
+          <div
+            role="group"
+            aria-label="Viewer count time range"
+            className="flex rounded-2xl border border-ink/10 bg-surface p-2"
+          >
+            {viewerPeriods.map((period) => {
+              const selected = viewerPeriod === period.value;
+              return (
+                <button
+                  key={period.value}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setViewerPeriod(period.value)}
+                  className={`min-h-12 flex-1 rounded-xl px-3 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 ${selected ? "bg-ink text-paper shadow-sm" : "text-ink/60 hover:bg-ink/5 hover:text-ink"}`}
+                >
+                  {period.label}
+                </button>
+              );
+            })}
+          </div>
+          <article className="flex items-center justify-between gap-5 rounded-2xl border border-ink/10 bg-surface p-5">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/45">
+                {selectedViewerPeriod.detail}
+              </p>
+              <p
+                className="mt-2 text-4xl tabular-nums text-ink"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {analytics?.visitors[selectedViewerPeriod.key] ?? "—"}
+              </p>
+              <p className="mt-1 text-xs text-ink/50">Unique viewers</p>
+            </div>
+            <div className="rounded-xl bg-teal-500/10 p-3 text-teal-600">
+              <Eye
+                size={22}
+                aria-hidden="true"
+              />
+            </div>
+          </article>
+          <p className="text-xs text-ink/45 lg:col-span-2">
+            {analytics?.onlineViewers ?? 0} viewers currently online · counts
+            use UTC boundaries.
+          </p>
         </div>
       </section>
 
@@ -303,79 +289,6 @@ function Dashboard() {
             note="Current configured-bucket snapshot. The allowance is account-wide, and R2 billing uses a monthly average."
             Icon={HardDrive}
           />
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-ink/10 bg-surface p-5 md:p-6">
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-5">
-          <div className="flex gap-4">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/10 text-teal-600">
-              <UsersRound size={20} />
-            </span>
-            <div>
-              <h2 className="font-medium text-ink">Visitor logs</h2>
-              <p className="mt-1 max-w-xl text-xs leading-5 text-ink/55">
-                Keep the latest {analytics?.retentionDays ?? 90} days of page
-                visits. Older logs are removed automatically.
-              </p>
-            </div>
-          </div>
-          <span className="rounded-full border border-ink/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-ink/45">
-            CSV export
-          </span>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.2fr_auto] lg:items-end">
-          <label className="block text-xs text-ink/60">
-            From (UTC)
-            <input
-              type="date"
-              value={logFrom}
-              min={dateBounds.earliest}
-              max={dateBounds.latest}
-              onChange={(event) => setLogFrom(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-ink/15 bg-paper px-3 py-2.5 text-sm text-ink"
-            />
-          </label>
-          <label className="block text-xs text-ink/60">
-            To (UTC)
-            <input
-              type="date"
-              value={logTo}
-              min={logFrom}
-              max={dateBounds.latest}
-              onChange={(event) => setLogTo(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-ink/15 bg-paper px-3 py-2.5 text-sm text-ink"
-            />
-          </label>
-          <label className="block text-xs text-ink/60">
-            Page
-            <select
-              value={logPath}
-              onChange={(event) => setLogPath(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-ink/15 bg-paper px-3 py-2.5 text-sm text-ink"
-            >
-              <option value="">All pages</option>
-              <option value="/">Landing page</option>
-              <option value="/blog">Blog and articles</option>
-              <option value="/projects">Projects</option>
-              <option value="/experience">Experience</option>
-              <option value="/gear">Gear</option>
-              <option value="/resources">Resources</option>
-              <option value="/stack">Stack</option>
-              <option value="/certifications">Certifications</option>
-              <option value="/recommendations">Recommendations</option>
-              <option value="/skills">Skills</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => void exportLogs()}
-            disabled={downloading}
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm text-paper transition hover:bg-ink/80 disabled:opacity-50"
-          >
-            <ArrowDownToLine size={16} />
-            {downloading ? "Preparing…" : "Download CSV"}
-          </button>
         </div>
       </section>
 

@@ -139,26 +139,26 @@ function LandingHero() {
 
         <div className="landing-hero-copy">
           <p className="landing-hero-eyebrow">
-            <Code2 size={14} /> FRONTEND · UI/UX · CURIOUS BY NATURE
+            <Code2 size={14} /> WEB · MOBILE · NETWORKING
           </p>
           <h1 className="landing-hero-title">
             Karl <span>Diether</span>
           </h1>
           <p className="landing-hero-lead">
-            I turn ideas into useful digital experiences.
+            Building practical digital experiences.
           </p>
           <p className="landing-hero-description">
-            I’m an IT graduate who enjoys building modern web applications,
-            shaping thoughtful interfaces, and learning new technologies along
-            the way.
+            I build web and mobile applications, software projects, and network
+            solutions with a focus on clean design, functionality, and
+            continuous learning.
           </p>
           <div
             className="landing-skill-list"
-            aria-label="Areas of interest"
+            aria-label="Project focus areas"
           >
-            <span>Frontend development</span>
-            <span>UI &amp; UX</span>
-            <span>Flutter &amp; Dart</span>
+            <span>Web applications</span>
+            <span>Mobile apps</span>
+            <span>Networking projects</span>
           </div>
           <div className="landing-hero-actions">
             <HiringStatus />
@@ -175,7 +175,7 @@ function LandingHero() {
       <div className="landing-hero-footer">
         <span>DESIGN WITH INTENTION</span>
         <span className="landing-footer-rule" />
-        <span>BUILD WITH CURIOSITY</span>
+        <span>BUILT FOR REAL USE</span>
       </div>
     </section>
   );

@@ -40,21 +40,3 @@ export async function getAdminAnalytics(signal?: AbortSignal) {
   const response = await authorizedFetch("/admin/analytics", signal);
   return (await response.json()) as AdminAnalytics;
 }
-
-export interface VisitorLogFilters {
-  from: string;
-  to: string;
-  path: string;
-}
-
-export async function downloadVisitorLogs(filters: VisitorLogFilters) {
-  const query = new URLSearchParams({
-    from: filters.from,
-    to: filters.to,
-    ...(filters.path && { path: filters.path }),
-  });
-  const response = await authorizedFetch(
-    `/admin/analytics/logs.csv?${query.toString()}`,
-  );
-  return response.blob();
-}

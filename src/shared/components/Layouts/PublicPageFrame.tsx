@@ -35,7 +35,7 @@ export default function PublicPageFrame({
         <div className="public-page-header__footer">
           <span>DESIGN WITH INTENTION</span>
           <span className="public-page-header__rule" />
-          <span>BUILD WITH CURIOSITY</span>
+          <span>BUILT FOR REAL USE</span>
         </div>
       </header>
       <div className="public-page-content">{children}</div>
