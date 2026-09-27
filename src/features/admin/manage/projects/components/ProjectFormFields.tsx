@@ -506,7 +506,7 @@ export default function ProjectFormFields({
         </FormSection>
       </fieldset>
 
-      <div className="sticky bottom-0 z-10 -mx-5 flex justify-end gap-3 border-t border-ink/10 bg-surface/95 px-5 py-4 backdrop-blur">
+      <div className="flex flex-col-reverse justify-end gap-3 border-t border-ink/10 pt-4 sm:flex-row">
         <button
           type="button"
           onClick={onCancel}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowUpRight, Code2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Project } from "../../projects/types/project";
@@ -8,6 +8,17 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
   const [slots, setSlots] = useState(() =>
     projects.map((project) => project.id),
   );
+  const pointerStartRef = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+  } | null>(null);
+  const touchStartRef = useRef<{ identifier: number; x: number; y: number } | null>(
+    null,
+  );
+  const suppressClickUntilRef = useRef(0);
+  const wheelCooldownRef = useRef(0);
+  const wheelDeltaRef = useRef(0);
   const centeredId = slots[centerIndex];
 
   function selectProject(id: string) {
@@ -20,10 +31,124 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
     });
   }
 
+  function selectAdjacentProject(direction: -1 | 1) {
+    if (projects.length < 2) return;
+
+    setSlots((current) => {
+      const adjacentSlot = centerIndex + direction;
+      const adjacentId =
+        current[adjacentSlot] ??
+        current.find((projectId) => projectId !== current[centerIndex]);
+      const adjacentIndex = current.indexOf(adjacentId ?? "");
+      if (adjacentIndex < 0) return current;
+
+      const next = [...current];
+      [next[adjacentIndex], next[centerIndex]] = [
+        next[centerIndex],
+        next[adjacentIndex],
+      ];
+      return next;
+    });
+  }
+
+  function handlePointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    const start = pointerStartRef.current;
+    pointerStartRef.current = null;
+    if (!start || start.pointerId !== event.pointerId) return;
+
+    handleSwipe(event.clientX - start.x, event.clientY - start.y);
+  }
+
+  function handleSwipe(deltaX: number, deltaY: number) {
+    if (Math.abs(deltaX) < 42 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2)
+      return;
+
+    suppressClickUntilRef.current = Date.now() + 400;
+    selectAdjacentProject(deltaX < 0 ? 1 : -1);
+  }
+
+  function handleTouchStart(event: React.TouchEvent<HTMLDivElement>) {
+    if (event.touches.length !== 1) {
+      touchStartRef.current = null;
+      return;
+    }
+
+    const touch = event.touches[0];
+    touchStartRef.current = {
+      identifier: touch.identifier,
+      x: touch.clientX,
+      y: touch.clientY,
+    };
+  }
+
+  function handleTouchEnd(event: React.TouchEvent<HTMLDivElement>) {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+
+    const touch = Array.from(event.changedTouches).find(
+      (item) => item.identifier === start.identifier,
+    );
+    if (!touch) return;
+
+    handleSwipe(touch.clientX - start.x, touch.clientY - start.y);
+  }
+
+  function handleWheel(event: React.WheelEvent<HTMLDivElement>) {
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+
+    wheelDeltaRef.current += event.deltaX;
+    if (Math.abs(wheelDeltaRef.current) < 32) return;
+
+    event.preventDefault();
+    const direction = wheelDeltaRef.current > 0 ? 1 : -1;
+    wheelDeltaRef.current = 0;
+    if (Date.now() < wheelCooldownRef.current) return;
+
+    wheelCooldownRef.current = Date.now() + 550;
+    selectAdjacentProject(direction);
+  }
+
   return (
     <div
-      className={`project-fan ${projects.length === 3 ? "project-fan--layered" : ""}`}
+      className={`project-fan relative ${
+        projects.length === 3 ? "project-fan--layered" : ""
+      }`}
+      role="region"
       aria-label="Featured projects"
+      aria-roledescription="carousel"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={() => {
+        touchStartRef.current = null;
+      }}
+      onPointerDown={(event) => {
+        if (
+          projects.length < 2 ||
+          !event.isPrimary ||
+          event.pointerType !== "pen"
+        ) {
+          return;
+        }
+
+        pointerStartRef.current = {
+          pointerId: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+        };
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={() => {
+        pointerStartRef.current = null;
+      }}
+      onWheel={handleWheel}
+      onClickCapture={(event) => {
+        if (Date.now() > suppressClickUntilRef.current) return;
+        event.preventDefault();
+        event.stopPropagation();
+        suppressClickUntilRef.current = 0;
+      }}
     >
       {projects.map((project, index) => {
         const active = project.id === centeredId;
@@ -99,6 +224,9 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
       >
         Selected project:{" "}
         {projects.find((project) => project.id === centeredId)?.title}
+      </p>
+      <p className="pointer-events-none absolute inset-x-0 bottom-0 text-center font-mono text-[9px] uppercase tracking-widest text-ink/40 sm:hidden">
+        Swipe to switch projects
       </p>
     </div>
   );

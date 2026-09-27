@@ -312,6 +312,7 @@ select option {
 .project-fan {
   display: grid;
   gap: 1rem;
+  touch-action: pan-y;
 }
 .project-fan-card {
   height: 340px;
