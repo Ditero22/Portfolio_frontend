@@ -31,6 +31,7 @@ export default function LoginPage() {
   const pinValuesRef = useRef({ pin: "", confirmation: "" });
   const nonceRef = useRef("");
   const isResettingRef = useRef(false);
+  const loginRequestRef = useRef(false);
 
   const [pin, setPin] = useState("");
   const [newPin, setNewPin] = useState("");
@@ -187,33 +188,55 @@ export default function LoginPage() {
     return () => buttonContainer.replaceChildren();
   }, [isGoogleReady, isPinConfirmed, isRecovering, nonce]);
 
-  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const submitLogin = useCallback(
+    async (value: string) => {
+      if (loginRequestRef.current) return;
+
+      setError("");
+      setNotice("");
+
+      if (!/^\d{8}$/.test(value)) {
+        setError("Enter your 8-digit admin PIN to continue.");
+        return;
+      }
+
+      loginRequestRef.current = true;
+      setIsLoading(true);
+
+      try {
+        const response = await loginWithPin(value);
+        login(response.user, response.accessToken);
+        navigate("/admin", { replace: true });
+      } catch (loginError) {
+        setError(
+          loginError instanceof Error ? loginError.message : "Login failed.",
+        );
+      } finally {
+        loginRequestRef.current = false;
+        setIsLoading(false);
+      }
+    },
+    [login, navigate],
+  );
+
+  function handlePinChange(value: string) {
+    setPin(value);
     setError("");
     setNotice("");
 
-    if (!/^\d{8}$/.test(pin)) {
-      setError("Enter your 8-digit admin PIN to continue.");
-      return;
+    if (!isRecovering && /^\d{8}$/.test(value)) {
+      void submitLogin(value);
     }
+  }
 
-    setIsLoading(true);
-
-    try {
-      const response = await loginWithPin(pin);
-      login(response.user, response.accessToken);
-      navigate("/admin", { replace: true });
-    } catch (loginError) {
-      setError(
-        loginError instanceof Error ? loginError.message : "Login failed.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
+  function handleLogin(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void submitLogin(pin);
   }
 
   function openRecovery() {
     setIsRecovering(true);
+    setPin("");
     setError("");
     setNotice("");
     setNewPin("");
@@ -420,7 +443,8 @@ export default function LoginPage() {
               </p>
               <h2 className="mt-2 text-4xl leading-none">Sign in</h2>
               <p className="mt-4 text-sm leading-6 text-ink/55">
-                Enter your private 8-digit PIN to continue to your dashboard.
+                Enter your private 8-digit PIN. Sign-in starts after the eighth
+                digit.
               </p>
 
               <form
@@ -430,7 +454,7 @@ export default function LoginPage() {
                 <PinField
                   label="Admin PIN"
                   value={pin}
-                  onChange={setPin}
+                  onChange={handlePinChange}
                   autoFocus
                 />
 
