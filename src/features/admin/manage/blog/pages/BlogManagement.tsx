@@ -202,7 +202,7 @@ function BlogManagement() {
     : emptyForm;
 
   return (
-    <main className="w-full">
+    <div className="w-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -385,7 +385,7 @@ function BlogManagement() {
           />
         )}
       </Modal>
-    </main>
+    </div>
   );
 }
 

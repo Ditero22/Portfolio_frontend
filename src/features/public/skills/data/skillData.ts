@@ -2,6 +2,33 @@ import type { PortfolioContentInput } from "../../portfolioContent/types/portfol
 
 const skillData: PortfolioContentInput[] = [
   {
+    title: "HTML",
+    subtitle: "Semantic page structure",
+    description:
+      "Building accessible page structure and organizing content for web interfaces.",
+    category: "Frontend",
+    url: null,
+    published: true,
+  },
+  {
+    title: "CSS",
+    subtitle: "Responsive styling",
+    description:
+      "Styling responsive layouts and interface details across screen sizes.",
+    category: "Frontend",
+    url: null,
+    published: true,
+  },
+  {
+    title: "JavaScript",
+    subtitle: "Interactive web applications",
+    description:
+      "Adding interactive behavior and application logic to web projects.",
+    category: "Frontend",
+    url: null,
+    published: true,
+  },
+  {
     title: "React",
     subtitle: "Component-based interfaces",
     description:
@@ -65,9 +92,91 @@ const skillData: PortfolioContentInput[] = [
   },
   {
     title: "Flutter and Dart",
-    subtitle: "Mobile application development",
-    description: "Used during internship work on a mobile application.",
-    category: "Other",
+    subtitle: "Cross-platform mobile interfaces",
+    description:
+      "Building mobile UI and application features with Flutter and Dart.",
+    category: "Frontend",
+    url: null,
+    published: true,
+  },
+  {
+    title: "React Native",
+    subtitle: "Cross-platform mobile interfaces",
+    description:
+      "Building mobile interfaces with React Native and JavaScript or TypeScript.",
+    category: "Frontend",
+    url: null,
+    published: true,
+  },
+  {
+    title: "Cisco Packet Tracer",
+    subtitle: "Network design and simulation",
+    description:
+      "Designing and testing network layouts with simulated routers, switches, and endpoints.",
+    category: "Networking",
+    url: null,
+    published: true,
+  },
+  {
+    title: "VLANs and Inter-VLAN Routing",
+    subtitle: "Network segmentation",
+    description:
+      "Segmenting networks with VLANs and configuring communication between network segments.",
+    category: "Networking",
+    url: null,
+    published: true,
+  },
+  {
+    title: "OSPF and Static Routing",
+    subtitle: "Routing fundamentals",
+    description:
+      "Configuring static routes and practicing dynamic routing with OSPF.",
+    category: "Networking",
+    url: null,
+    published: true,
+  },
+  {
+    title: "DHCP and DNS",
+    subtitle: "Network services",
+    description:
+      "Configuring address assignment and name resolution for network clients.",
+    category: "Networking",
+    url: null,
+    published: true,
+  },
+  {
+    title: "ACLs, IP Addressing, and Subnetting",
+    subtitle: "Network planning and access control",
+    description:
+      "Planning IPv4 subnets and applying access control lists to manage network traffic.",
+    category: "Networking",
+    url: null,
+    published: true,
+  },
+  {
+    title: "Routers and Switches",
+    subtitle: "Network infrastructure",
+    description:
+      "Working with router and switch configuration in network lab exercises.",
+    category: "Networking",
+    url: null,
+    published: true,
+  },
+  {
+    title: "Drizzle ORM",
+    subtitle: "TypeScript database access",
+    description:
+      "Defining typed database schemas and queries for application backends.",
+    category: "Backend",
+    url: null,
+    published: true,
+  },
+  {
+    title: "Prisma ORM",
+    subtitle: "Database schema and queries",
+    description:
+      "Managing database models, migrations, and type-safe queries for backend projects.",
+    category: "Backend",
     url: null,
     published: true,
   },

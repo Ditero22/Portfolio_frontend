@@ -3,13 +3,13 @@ import {
   Navigate,
   RouterProvider,
   createBrowserRouter,
-  useLocation,
 } from "react-router-dom";
 
 import { AuthProvider } from "./features/auth/context/AuthProvider";
 import PageSkeleton from "./shared/components/Loading/PageSkeleton";
 import ProtectedRoute from "./shared/ProtectedRoute";
 import MainLayout from "./shared/components/Layouts/MainLayout";
+import { adminRoutes } from "./shared/routing/adminRoutes";
 
 const LoginPage = lazy(() => import("./features/auth/pages/LoginPage"));
 
@@ -87,21 +87,8 @@ function createProtectedRoute(
   };
 }
 
-function NotFoundRedirect() {
-  const location = useLocation();
-
-  const destination = location.pathname.startsWith("/admin") ? "/admin" : "/";
-
-  return (
-    <Navigate
-      to={destination}
-      replace
-    />
-  );
-}
-
 const router = createBrowserRouter([
-  createRoute("/login", <LoginPage />),
+  createRoute(adminRoutes.login, <LoginPage />),
 
   {
     element: <MainLayout />,
@@ -119,30 +106,27 @@ const router = createBrowserRouter([
       createRoute("/recommendations", <RecommendationsPage />),
       createRoute("/skills", <SkillsPage />),
 
-      createProtectedRoute("/admin", <AdminDashboard />),
-      createProtectedRoute("/admin/manage/blog", <BlogManagement />),
-      createProtectedRoute("/admin/manage/projects", <ProjectManagement />),
+      createProtectedRoute(adminRoutes.dashboard, <AdminDashboard />),
+      createProtectedRoute(adminRoutes.blog, <BlogManagement />),
+      createProtectedRoute(adminRoutes.projects, <ProjectManagement />),
       createProtectedRoute(
-        "/admin/manage/experience",
+        adminRoutes.experience,
         <ExperienceManagement />,
       ),
-      createProtectedRoute("/admin/manage/stack", <StackManagement />),
+      createProtectedRoute(adminRoutes.stack, <StackManagement />),
       createProtectedRoute(
-        "/admin/manage/certifications",
+        adminRoutes.certifications,
         <CertificationsManagement />,
       ),
       createProtectedRoute(
-        "/admin/manage/recommendations",
+        adminRoutes.recommendations,
         <RecommendationsManagement />,
       ),
-      createProtectedRoute("/admin/manage/skills", <SkillsManagement />),
-      createProtectedRoute("/admin/settings", <SettingsManagement />),
+      createProtectedRoute(adminRoutes.skills, <SkillsManagement />),
+      createProtectedRoute(adminRoutes.settings, <SettingsManagement />),
+      createRoute(adminRoutes.fallback, <Navigate to="/" replace />),
+      createRoute("*", <Navigate to="/" replace />),
     ],
-  },
-
-  {
-    path: "*",
-    element: <NotFoundRedirect />,
   },
 ]);
 

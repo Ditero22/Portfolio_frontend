@@ -12,6 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import PinField from "../components/PinField";
 import { useAuthSession } from "../hooks/useAuthSession";
 import { loginWithPin } from "../services/loginService";
+import { adminRoutes } from "@/shared/routing/adminRoutes";
 import {
   requestPinResetChallenge,
   resetPinWithGoogle,
@@ -206,7 +207,7 @@ export default function LoginPage() {
       try {
         const response = await loginWithPin(value);
         login(response.user, response.accessToken);
-        navigate("/admin", { replace: true });
+        navigate(adminRoutes.dashboard, { replace: true });
       } catch (loginError) {
         setError(
           loginError instanceof Error ? loginError.message : "Login failed.",

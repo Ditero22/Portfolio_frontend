@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuthSession } from "../features/auth/hooks/useAuthSession";
+import { adminRoutes } from "./routing/adminRoutes";
 import type { Role } from "../types/auth";
 
 interface ProtectedRouteProps {
@@ -17,7 +18,7 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   if (!user) {
     return (
       <Navigate
-        to="/login"
+        to={adminRoutes.login}
         replace
         state={{ from: location }}
       />

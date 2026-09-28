@@ -3,6 +3,7 @@ import {
   Award,
   Code2,
   Layers3,
+  Network,
   Quote,
   Server,
 } from "lucide-react";
@@ -67,7 +68,8 @@ function EmptyPreview({
     stack: "Tools I use will appear here when published.",
     certifications: "Learning milestones will appear here when published.",
     recommendations: "Recommendations will appear here when published.",
-    skills: "Frontend and backend skills will appear here when published.",
+    skills:
+      "Frontend, backend, and networking skills will appear here when published.",
   };
 
   return (
@@ -138,6 +140,7 @@ function SkillsPreview({
   const groups = [
     { label: "Frontend", icon: Code2 },
     { label: "Backend", icon: Server },
+    { label: "Networking", icon: Network },
   ] as const;
 
   return (
@@ -287,21 +290,21 @@ export default function PortfolioContentPreviews() {
 
   return (
     <div className="mt-16 space-y-16 md:mt-20 md:space-y-20">
-      <PreviewSection number="05" title="Stack" href="/stack">
+      <PreviewSection number="06" title="Stack" href="/stack">
         <StackPreview {...sections.stack} />
       </PreviewSection>
-      <PreviewSection number="06" title="Skills" href="/skills">
+      <PreviewSection number="07" title="Skills" href="/skills">
         <SkillsPreview {...sections.skills} />
       </PreviewSection>
       <PreviewSection
-        number="07"
+        number="08"
         title="Certifications"
         href="/certifications"
       >
         <CertificationsPreview {...sections.certifications} />
       </PreviewSection>
       <PreviewSection
-        number="08"
+        number="09"
         title="Recommendations"
         href="/recommendations"
       >

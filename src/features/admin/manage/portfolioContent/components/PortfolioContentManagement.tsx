@@ -36,6 +36,8 @@ export interface PortfolioContentAdminConfig {
 
 const inputClass =
   "mt-2 w-full rounded-lg border border-ink/15 bg-paper px-3 py-2.5 text-sm text-ink outline-none transition focus:border-teal-500";
+const categorySelectClass =
+  `${inputClass} focus:border-ink/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500`;
 
 export default function PortfolioContentManagement({
   config,
@@ -83,6 +85,12 @@ export default function PortfolioContentManagement({
   }, [refresh]);
 
   const shownItems = pendingOrder ?? items;
+  const existingTitles = new Set(
+    items.map((item) => item.title.trim().toLocaleLowerCase()),
+  );
+  const missingSampleCount = (config.sampleData ?? []).filter(
+    (sample) => !existingTitles.has(sample.title.trim().toLocaleLowerCase()),
+  ).length;
 
   function moveItem(index: number, direction: -1 | 1) {
     const next = [...shownItems];
@@ -220,8 +228,14 @@ export default function PortfolioContentManagement({
     setImportingSamples(true);
     setError(null);
     try {
+      const titles = new Set(
+        items.map((item) => item.title.trim().toLocaleLowerCase()),
+      );
       for (const sample of config.sampleData) {
+        const normalizedTitle = sample.title.trim().toLocaleLowerCase();
+        if (titles.has(normalizedTitle)) continue;
         await saveAdminContent(config.kind, sample);
+        titles.add(normalizedTitle);
       }
       setItems(await getAdminContent(config.kind));
       setConfirmSamples(false);
@@ -250,7 +264,7 @@ export default function PortfolioContentManagement({
   }
 
   return (
-    <main className="mx-auto max-w-5xl pb-20">
+    <div className="mx-auto max-w-5xl pb-20">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">
@@ -261,13 +275,30 @@ export default function PortfolioContentManagement({
             {config.description}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openNew}
-          className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm text-paper transition hover:bg-ink/80"
-        >
-          <Plus size={16} /> Add {config.singular}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {config.sampleData?.length ? (
+            <button
+              type="button"
+              onClick={() => setConfirmSamples(true)}
+              disabled={loading || missingSampleCount === 0}
+              className="inline-flex items-center gap-2 rounded-full border border-ink/15 px-4 py-2.5 text-sm text-ink transition hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Load sample data
+              {missingSampleCount > 0 && (
+                <span className="font-mono text-[10px] text-ink/50">
+                  {missingSampleCount}
+                </span>
+              )}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={openNew}
+            className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm text-paper transition hover:bg-ink/80"
+          >
+            <Plus size={16} /> Add {config.singular}
+          </button>
+        </div>
       </header>
 
       {error && !editorOpen && (
@@ -313,15 +344,6 @@ export default function PortfolioContentManagement({
             Add your first {config.singular.toLowerCase()} to start building
             this section.
           </p>
-          {config.sampleData?.length ? (
-            <button
-              type="button"
-              onClick={() => setConfirmSamples(true)}
-              className="mt-5 rounded-full border border-ink/15 px-4 py-2 text-sm text-ink transition hover:bg-ink/5"
-            >
-              Load sample data
-            </button>
-          ) : null}
         </div>
       ) : (
         <div className="space-y-3">
@@ -411,9 +433,9 @@ export default function PortfolioContentManagement({
       >
         <div className="space-y-5 text-ink">
           <p>
-            Add {config.sampleData?.length ?? 0} sample{" "}
-            {config.title.toLowerCase()} entries? Published examples will show
-            publicly; draft samples stay hidden until you publish them.
+            Add {missingSampleCount} missing {config.title.toLowerCase()} sample
+            entries? Published examples will show publicly. Existing entries
+            with matching titles will be skipped.
           </p>
           <div className="flex justify-end gap-3">
             <button
@@ -426,7 +448,7 @@ export default function PortfolioContentManagement({
             </button>
             <button
               type="button"
-              disabled={importingSamples}
+              disabled={importingSamples || missingSampleCount === 0}
               onClick={() => void loadSampleData()}
               className="rounded-lg bg-ink px-4 py-2 text-sm text-paper disabled:opacity-50"
             >
@@ -475,12 +497,13 @@ export default function PortfolioContentManagement({
             {config.categoryLabel}
             {config.kind === "skills" ? (
               <select
-                className={inputClass}
+                className={categorySelectClass}
                 name="category"
                 defaultValue={editing?.category ?? "Frontend"}
               >
                 <option>Frontend</option>
                 <option>Backend</option>
+                <option>Networking</option>
                 <option>Other</option>
               </select>
             ) : (
@@ -680,6 +703,6 @@ export default function PortfolioContentManagement({
           </div>
         </div>
       </Modal>
-    </main>
+    </div>
   );
 }

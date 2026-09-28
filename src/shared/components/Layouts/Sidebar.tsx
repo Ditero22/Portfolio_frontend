@@ -1,6 +1,5 @@
 import {
   Award,
-  BookOpen,
   Bookmark,
   BriefcaseBusiness,
   Code2,
@@ -21,6 +20,7 @@ import { useAuthSession } from "../../../features/auth/hooks/useAuthSession";
 import ThemeToggle from "../../theme/ThemeToggle";
 import { Modal } from "../ui";
 import SocialLinks from "./SocialLinks";
+import { adminRoutes, isAdminPath } from "../../routing/adminRoutes";
 
 const primaryNavigation = [
   { label: "Blog", path: "/blog", icon: Newspaper },
@@ -38,16 +38,15 @@ const secondaryNavigation = [
 ];
 
 const adminNavigation = [
-  { label: "Dashboard", path: "/admin", end: true, icon: LayoutDashboard },
-  { label: "Blog", path: "/admin/manage/blog", icon: Newspaper },
-  { label: "Projects", path: "/admin/manage/projects", icon: FolderKanban },
-  { label: "Experience", path: "/admin/manage/experience", icon: BriefcaseBusiness },
-  { label: "Stack", path: "/admin/manage/stack", icon: Layers3 },
-  { label: "Skills", path: "/admin/manage/skills", icon: Code2 },
-  { label: "Certifications", path: "/admin/manage/certifications", icon: Award },
-  { label: "Recommendations", path: "/admin/manage/recommendations", icon: MessageSquareQuote },
-  { label: "Settings", path: "/admin/settings", icon: Settings },
-  { label: "Messages", path: "/admin/manage/messages", icon: BookOpen },
+  { label: "Dashboard", path: adminRoutes.dashboard, end: true, icon: LayoutDashboard },
+  { label: "Blog", path: adminRoutes.blog, icon: Newspaper },
+  { label: "Projects", path: adminRoutes.projects, icon: FolderKanban },
+  { label: "Experience", path: adminRoutes.experience, icon: BriefcaseBusiness },
+  { label: "Stack", path: adminRoutes.stack, icon: Layers3 },
+  { label: "Skills", path: adminRoutes.skills, icon: Code2 },
+  { label: "Certifications", path: adminRoutes.certifications, icon: Award },
+  { label: "Recommendations", path: adminRoutes.recommendations, icon: MessageSquareQuote },
+  { label: "Settings", path: adminRoutes.settings, icon: Settings },
 ];
 
 interface SidebarNavLinkProps {
@@ -127,7 +126,7 @@ function SidebarBrand({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <NavLink
-      to={isAdmin ? "/admin" : "/"}
+      to={isAdmin ? adminRoutes.dashboard : "/"}
       end
       className={`sidebar-brand${isAdmin ? "" : " sidebar-brand--public"}`}
       aria-label={`${title} home`}
@@ -169,7 +168,7 @@ function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuthSession();
-  const isAdmin = location.pathname.startsWith("/admin");
+  const isAdmin = isAdminPath(location.pathname);
 
   const closeMobileMenu = () => {
     setIsOpen(false);
@@ -190,7 +189,7 @@ function Sidebar() {
     <>
       <header className="sidebar-mobile-header fixed left-0 top-0 z-[100] flex h-12 w-full items-center px-3 md:hidden">
         <NavLink
-          to={isAdmin ? "/admin" : "/"}
+          to={isAdmin ? adminRoutes.dashboard : "/"}
           end
           onClick={closeMobileMenu}
           className="sidebar-mobile-brand"
@@ -205,15 +204,22 @@ function Sidebar() {
           className="sidebar-mobile-menu-button absolute right-4 flex h-8 w-8 items-center justify-center"
           aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
+          aria-controls="mobile-navigation"
         >
           {isOpen ? "×" : "☰"}
         </button>
       </header>
 
       <div
+        id="mobile-navigation"
         className={`sidebar-mobile-menu fixed left-0 top-12 z-[90] flex h-[calc(100dvh-3rem)] w-full flex-col overflow-hidden transition-transform duration-500 ease-in-out md:hidden ${
           isOpen ? "translate-y-0" : "-translate-y-full"
         }`}
+        aria-hidden={!isOpen}
+        inert={!isOpen}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") closeMobileMenu();
+        }}
       >
         {isAdmin ? (
           <nav className="min-h-0 flex-1 overflow-y-auto px-6 py-5">

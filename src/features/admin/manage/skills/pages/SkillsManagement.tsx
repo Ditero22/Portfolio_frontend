@@ -9,7 +9,7 @@ export default function SkillsManagement() {
         title: "Skills",
         singular: "Skill",
         description:
-          "Organize your strengths into clear Frontend and Backend groups.",
+          "Organize your frontend, backend, and networking skills.",
         titleLabel: "Skill",
         subtitleLabel: "Experience level (optional)",
         descriptionLabel: "Notes or examples (optional)",

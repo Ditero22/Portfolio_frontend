@@ -1,4 +1,4 @@
-import ResourceSection from "../components/ResourceSection";
+import ResourceLibrary from "../components/ResourceLibrary";
 import { resourceGroups } from "../data/resources";
 import PublicPageFrame from "@/shared/components/Layouts/PublicPageFrame";
 
@@ -6,18 +6,11 @@ export default function ResourcesPage() {
   return (
     <PublicPageFrame
       number="04"
-      eyebrow="Learning shelf"
+      eyebrow="Reference library"
       title="Resources"
-      description="A growing collection of the guides, tools, and platforms I use to learn, build projects, and improve my workflow."
+      description="A practical library of documentation, learning platforms, and tools I return to while building and studying. Search by topic or browse a collection."
     >
-      <div className="public-page-list">
-        {resourceGroups.map((group) => (
-          <ResourceSection
-            key={group.title}
-            group={group}
-          />
-        ))}
-      </div>
+      <ResourceLibrary groups={resourceGroups} />
     </PublicPageFrame>
   );
 }

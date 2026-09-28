@@ -300,7 +300,7 @@ export default function ProjectManagement() {
   }
 
   return (
-    <main className="max-w-5xl">
+    <div className="max-w-5xl">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-5xl text-ink">Projects</h1>
@@ -682,6 +682,6 @@ export default function ProjectManagement() {
           </div>
         </div>
       </Modal>
-    </main>
+    </div>
   );
 }

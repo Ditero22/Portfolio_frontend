@@ -13,9 +13,11 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
     x: number;
     y: number;
   } | null>(null);
-  const touchStartRef = useRef<{ identifier: number; x: number; y: number } | null>(
-    null,
-  );
+  const touchStartRef = useRef<{
+    identifier: number;
+    x: number;
+    y: number;
+  } | null>(null);
   const suppressClickUntilRef = useRef(0);
   const wheelCooldownRef = useRef(0);
   const wheelDeltaRef = useRef(0);
@@ -157,16 +159,20 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
             key={project.id}
             data-slot={slots.indexOf(project.id)}
             data-active={active}
-            className={`project-fan-card group relative flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-surface p-6 text-ink shadow-xl shadow-black/10 ${active ? "project-border-light" : ""}`}
+            role={active ? undefined : "button"}
+            tabIndex={active ? undefined : 0}
+            aria-label={
+              active ? undefined : `Show ${project.title} in the center`
+            }
+            onClick={active ? undefined : () => selectProject(project.id)}
+            onKeyDown={(event) => {
+              if (active || (event.key !== "Enter" && event.key !== " "))
+                return;
+              event.preventDefault();
+              selectProject(project.id);
+            }}
+            className={`project-fan-card group relative flex flex-col overflow-hidden rounded-2xl border border-ink/15 bg-surface p-6 text-ink shadow-xl shadow-black/10 ${active ? "project-border-light" : "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"}`}
           >
-            {!active && (
-              <button
-                type="button"
-                onClick={() => selectProject(project.id)}
-                aria-label={`Show ${project.title} in the center`}
-                className="absolute inset-0 z-10 cursor-pointer rounded-2xl focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-teal-500"
-              />
-            )}
             <div className="mb-7 flex items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full border border-teal-500/25 bg-teal-500/10 px-3 py-1 font-mono text-[9px] uppercase tracking-wider">
@@ -204,10 +210,10 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
             <div className="mt-auto min-h-16 pt-4">
               {active && (
                 <Link
-                  to="/projects"
-                  className="flex items-center justify-between border-t border-ink/10 pt-4 text-xs text-ink/70 focus-visible:outline-2 focus-visible:outline-teal-500"
+                  to={`/projects/${encodeURIComponent(project.slug ?? project.id)}`}
+                  className="flex min-h-11 items-center justify-between border-t border-ink/10 pt-3 text-xs text-ink/70 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
                 >
-                  <span>Explore project</span>
+                  <span>View case study</span>
                   <ArrowUpRight
                     size={16}
                     aria-hidden="true"

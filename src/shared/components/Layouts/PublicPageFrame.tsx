@@ -18,7 +18,7 @@ export default function PublicPageFrame({
   className = "",
 }: PublicPageFrameProps) {
   return (
-    <main className={`public-page ${className}`}>
+    <div className={`public-page ${className}`}>
       <header className="public-page-header">
         <div className="public-page-header__glow" />
         <div className="public-page-header__topline">
@@ -39,6 +39,6 @@ export default function PublicPageFrame({
         </div>
       </header>
       <div className="public-page-content">{children}</div>
-    </main>
+    </div>
   );
 }

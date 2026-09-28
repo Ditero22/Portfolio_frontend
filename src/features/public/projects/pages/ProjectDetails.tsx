@@ -3,17 +3,15 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import NetworkLab from "../components/NetworkLab";
 import ProjectContributionMap from "../components/ProjectContributionMap";
-import { getProjects, projectsChangedEvent } from "../services/projects.service";
+import {
+  getProjects,
+  projectsChangedEvent,
+} from "../services/projects.service";
 import type { Project } from "../types/project";
 import { projectCategories } from "../types/project";
+import { getProjectStatusLabel } from "../utils/projectStatus";
 import { publicApiRefreshIntervalMs } from "@/shared/api";
 import PublicPageFrame from "@/shared/components/Layouts/PublicPageFrame";
-
-const statusLabels: Record<string, string> = {
-  completed: "Completed",
-  "in-progress": "In progress",
-  planned: "Planned",
-};
 
 export default function ProjectDetailsPage() {
   const { slug = "" } = useParams();
@@ -81,7 +79,9 @@ export default function ProjectDetailsPage() {
 
   const categoryLabel =
     projectCategories.find((category) => category.value === project?.category)
-      ?.label ?? project?.category ?? "Project";
+      ?.label ??
+    project?.category ??
+    "Project";
   const images = (project?.images ?? []).filter(
     (image) => image && image !== project?.coverImageUrl,
   );
@@ -89,8 +89,12 @@ export default function ProjectDetailsPage() {
   return (
     <PublicPageFrame
       number="01"
-      eyebrow={project?.category === "networking" ? "Network lab" : "Case study"}
-      title={project?.title ?? (isLoading ? "Loading project" : "Project not found")}
+      eyebrow={
+        project?.category === "networking" ? "Network lab" : "Case study"
+      }
+      title={
+        project?.title ?? (isLoading ? "Loading project" : "Project not found")
+      }
       description={
         project?.description ??
         (isLoading
@@ -134,15 +138,20 @@ export default function ProjectDetailsPage() {
               {categoryLabel}
             </span>
             <span className="rounded-full border border-ink/15 px-3 py-1 font-mono text-[10px] text-ink/55">
-              {statusLabels[project.status ?? "completed"] ?? project.status}
+              {getProjectStatusLabel(project)}
             </span>
             {project.featured && (
               <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 font-mono text-[10px] text-amber-700 dark:text-amber-300">
-                <Star size={11} aria-hidden="true" />
+                <Star
+                  size={11}
+                  aria-hidden="true"
+                />
                 Featured
               </span>
             )}
-            <span className="ml-auto text-xs text-ink/50">My role: {project.role}</span>
+            <span className="ml-auto text-xs text-ink/50">
+              My role: {project.role}
+            </span>
           </div>
 
           {project.category === "networking" ? (
@@ -164,23 +173,24 @@ export default function ProjectDetailsPage() {
             <p className="mt-3 whitespace-pre-line text-sm leading-7 text-ink/70">
               {project.fullDescription || project.description}
             </p>
-            {project.highlights.length > 0 && project.category !== "networking" && (
-              <ul className="mt-5 space-y-2">
-                {project.highlights.map((highlight) => (
-                  <li
-                    key={highlight}
-                    className="flex items-start gap-3 rounded-lg bg-paper/50 px-3 py-2 text-sm leading-6 text-ink/65"
-                  >
-                    <ArrowUpRight
-                      size={15}
-                      className="mt-1 shrink-0 text-teal-700 dark:text-teal-300"
-                      aria-hidden="true"
-                    />
-                    {highlight}
-                  </li>
-                ))}
-              </ul>
-            )}
+            {project.highlights.length > 0 &&
+              project.category !== "networking" && (
+                <ul className="mt-5 space-y-2">
+                  {project.highlights.map((highlight) => (
+                    <li
+                      key={highlight}
+                      className="flex items-start gap-3 rounded-lg bg-paper/50 px-3 py-2 text-sm leading-6 text-ink/65"
+                    >
+                      <ArrowUpRight
+                        size={15}
+                        className="mt-1 shrink-0 text-teal-700 dark:text-teal-300"
+                        aria-hidden="true"
+                      />
+                      {highlight}
+                    </li>
+                  ))}
+                </ul>
+              )}
           </section>
 
           <ProjectContributionMap contributions={project.contributions ?? []} />
@@ -235,9 +245,15 @@ export default function ProjectDetailsPage() {
                   rel="noreferrer"
                   className="inline-flex min-h-11 items-center gap-2 rounded-full border border-ink/15 px-4 text-xs text-ink/70 transition hover:border-ink/35 hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-500"
                 >
-                  <Code2 size={15} aria-hidden="true" />
+                  <Code2
+                    size={15}
+                    aria-hidden="true"
+                  />
                   Source code
-                  <ExternalLink size={12} aria-hidden="true" />
+                  <ExternalLink
+                    size={12}
+                    aria-hidden="true"
+                  />
                 </a>
               )}
               {project.liveUrl && (
@@ -248,7 +264,10 @@ export default function ProjectDetailsPage() {
                   className="inline-flex min-h-11 items-center gap-2 rounded-full bg-ink px-4 text-xs text-paper transition hover:bg-ink/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
                 >
                   Live demo
-                  <ExternalLink size={12} aria-hidden="true" />
+                  <ExternalLink
+                    size={12}
+                    aria-hidden="true"
+                  />
                 </a>
               )}
             </div>

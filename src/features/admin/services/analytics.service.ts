@@ -12,6 +12,16 @@ export interface AdminAnalytics {
     publishedPosts: number;
     draftPosts: number;
     projects: number;
+    publishedProjects: number;
+    hiddenProjects: number;
+    experience: ContentVisibility;
+    stack: ContentVisibility;
+    skills: ContentVisibility;
+    certifications: ContentVisibility;
+    recommendations: ContentVisibility;
+  };
+  settings: {
+    isHired: boolean;
   };
   storage: {
     available: boolean;
@@ -21,6 +31,12 @@ export interface AdminAnalytics {
   onlineViewers: number;
   retentionDays: number;
   generatedAt: string;
+}
+
+export interface ContentVisibility {
+  total: number;
+  published: number;
+  hidden: number;
 }
 
 async function authorizedFetch(path: string, signal?: AbortSignal) {

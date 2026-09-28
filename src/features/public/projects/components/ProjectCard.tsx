@@ -1,6 +1,14 @@
-import { ArrowUpRight, Code2, ExternalLink, Star } from "lucide-react";
+import {
+  ArrowUpRight,
+  Code2,
+  ExternalLink,
+  ImageOff,
+  Star,
+} from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Project } from "../types/project";
+import { getProjectStatusLabel } from "../utils/projectStatus";
 
 const categoryLabels: Record<string, string> = {
   web: "Web",
@@ -10,174 +18,190 @@ const categoryLabels: Record<string, string> = {
   other: "Other",
 };
 
-const statusLabels: Record<string, string> = {
-  completed: "Completed",
-  "in-progress": "In progress",
-  planned: "Planned",
-};
-
-export default function ProjectCard({
-  project,
-  index,
-}: {
-  project: Project;
-  index: number;
-}) {
+export default function ProjectCard({ project }: { project: Project }) {
   const category = project.category ?? "web";
-  const gallery = (project.images ?? []).filter(
-    (image) => image && image !== project.coverImageUrl,
-  );
+  const categoryLabel = categoryLabels[category] ?? category;
+  const projectUrl = `/projects/${encodeURIComponent(project.slug ?? project.id)}`;
+  const stack = Array.isArray(project.stack) ? project.stack : [];
+  const visibleStack = stack.slice(0, 4);
+  const remainingStackCount = Math.max(0, stack.length - visibleStack.length);
+  const summary =
+    project.description?.trim() || "Project details are coming soon.";
+  const sourceUrl = safeExternalUrl(project.sourceUrl);
+  const liveUrl = safeExternalUrl(project.liveUrl);
 
   return (
-    <article className="project-border-light design-card overflow-hidden rounded-2xl border border-ink/15 bg-surface">
-      {project.coverImageUrl && (
-        <figure className="relative overflow-hidden border-b border-ink/10 bg-ink/5">
-          <img
-            src={project.coverImageUrl}
-            alt={
-              category === "networking"
-                ? `${project.title} network topology`
-                : `${project.title} project cover`
-            }
-            loading="lazy"
-            className={`max-h-[30rem] w-full object-cover ${category === "networking" ? "object-contain p-4" : ""}`}
-          />
-          {category === "networking" && (
-            <figcaption className="absolute bottom-3 left-3 rounded-full border border-ink/10 bg-surface/90 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-ink/65 backdrop-blur">
-              Network topology
-            </figcaption>
-          )}
-        </figure>
-      )}
-      <div className="md:grid md:grid-cols-[8rem_1fr]">
-        <div className="relative flex min-h-24 items-center justify-between gap-4 border-b border-ink/10 bg-linear-to-br from-teal-500/10 to-transparent p-5 md:flex-col md:items-start md:border-b-0 md:border-r">
-          <Code2
-            size={30}
-            strokeWidth={1.25}
-            className="text-ink/60"
-            aria-hidden="true"
-          />
-          <span className="font-mono text-4xl text-ink/20">
-            {String(index + 1).padStart(2, "0")}
+    <article className="project-border-light project-list-card design-card group relative flex min-w-0 flex-col rounded-2xl border border-ink/15 bg-surface">
+      <Link
+        to={projectUrl}
+        aria-label={`View ${project.title || "project"} details`}
+        className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500"
+      >
+        <span className="sr-only">Open project details</span>
+      </Link>
+      <ProjectMedia
+        key={project.coverImageUrl ?? "no-cover"}
+        project={project}
+      />
+      <div className="flex flex-1 flex-col p-4">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <span className="rounded-full border border-teal-500/25 bg-teal-500/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-ink/75">
+            {categoryLabel}
           </span>
+          <span className="rounded-full border border-ink/15 px-2.5 py-1 font-mono text-[10px] text-ink/55">
+            {getProjectStatusLabel(project)}
+          </span>
+          {project.featured && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-2.5 py-1 font-mono text-[10px] text-amber-700 dark:text-amber-300">
+              <Star
+                size={11}
+                aria-hidden="true"
+              />
+              Featured
+            </span>
+          )}
         </div>
-        <div className="p-5 md:p-7">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-teal-500/25 bg-teal-500/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-ink/75">
-              {categoryLabels[category] ?? category}
-            </span>
-            <span className="rounded-full border border-ink/15 px-3 py-1 font-mono text-[10px] text-ink/55">
-              {statusLabels[project.status ?? "completed"] ?? project.status}
-            </span>
-            {project.featured && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 font-mono text-[10px] text-amber-700 dark:text-amber-300">
-                <Star
-                  size={11}
-                  aria-hidden="true"
-                />
-                Featured
-              </span>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-3xl text-ink">{project.title}</h2>
-            <span className="rounded-full border border-ink/15 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-ink/55">
+
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <h2 className="line-clamp-2 min-w-0 text-2xl leading-tight text-ink">
+            {project.title || "Untitled project"}
+          </h2>
+          {project.role?.trim() && (
+            <span className="max-w-[42%] shrink-0 truncate rounded-full border border-ink/15 px-2 py-1 font-mono text-[9px] uppercase tracking-wider text-ink/55">
               {project.role}
             </span>
-          </div>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-ink/70">
-            {project.description}
-          </p>
-          <Link
-            to={`/projects/${encodeURIComponent(project.slug ?? project.id)}`}
-            className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-full border border-ink/15 px-4 text-xs text-ink/70 transition hover:border-teal-500/50 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
-          >
-            Explore project
-            <ArrowUpRight size={14} aria-hidden="true" />
-          </Link>
-          {project.fullDescription && (
-            <p className="mt-3 max-w-3xl whitespace-pre-line text-sm leading-7 text-ink/60">
-              {project.fullDescription}
-            </p>
           )}
-          {project.highlights.length > 0 && (
-            <ul className="mt-5 space-y-2 text-sm text-ink/65">
-              {project.highlights.map((highlight) => (
+        </div>
+
+        <p className="mt-2 line-clamp-3 text-sm leading-6 text-ink/65">
+          {summary}
+        </p>
+
+        <div className="mt-auto pt-4">
+          {stack.length > 0 && (
+            <ul
+              aria-label="Technologies"
+              className="flex flex-wrap gap-1.5"
+            >
+              {visibleStack.map((item, itemIndex) => (
                 <li
-                  key={highlight}
-                  className="flex items-start gap-3 rounded-lg bg-paper/50 px-3 py-2"
+                  key={`${item}-${itemIndex}`}
+                  className="max-w-full truncate rounded-full border border-ink/10 bg-paper/50 px-2.5 py-1 font-mono text-[10px] text-ink/60"
                 >
-                  <ArrowUpRight
-                    size={15}
-                    className="mt-1 shrink-0 text-ink/40"
-                    aria-hidden="true"
-                  />
-                  {highlight}
+                  {item}
                 </li>
               ))}
+              {remainingStackCount > 0 && (
+                <li className="rounded-full border border-ink/10 px-2.5 py-1 font-mono text-[10px] text-ink/50">
+                  +{remainingStackCount}
+                </li>
+              )}
             </ul>
           )}
-          {gallery.length > 0 && (
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {gallery.map((image, imageIndex) => (
-                <img
-                  key={`${image}-${imageIndex}`}
-                  src={image}
-                  alt={`${project.title} project image ${imageIndex + 1}`}
-                  loading="lazy"
-                  className="aspect-video w-full rounded-lg border border-ink/10 bg-paper object-cover"
-                />
-              ))}
-            </div>
-          )}
-          <div className="mt-6 flex flex-wrap gap-2 border-t border-ink/10 pt-5">
-            {project.stack.map((item) => (
-              <span
-                key={item}
-                className="rounded-full border border-ink/15 px-3 py-1 font-mono text-[10px] text-ink/60"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-          {(project.sourceUrl || project.liveUrl) && (
-            <div className="mt-5 flex flex-wrap gap-3">
-              {project.sourceUrl && (
+
+          <div className="mt-3 flex min-h-10 items-center justify-between gap-3 border-t border-ink/10 pt-3">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink/65 transition-colors group-hover:text-teal-700 dark:group-hover:text-teal-300">
+              View project
+              <ArrowUpRight
+                size={14}
+                aria-hidden="true"
+              />
+            </span>
+            <div className="relative z-20 flex shrink-0 items-center gap-1">
+              {sourceUrl && (
                 <a
-                  href={project.sourceUrl}
+                  href={sourceUrl}
                   target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex min-h-10 items-center gap-2 rounded-full border border-ink/15 px-4 text-xs text-ink/70 transition hover:border-ink/35 hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-500"
+                  rel="noopener noreferrer"
+                  aria-label={`Source code for ${project.title}`}
+                  title="Source code"
+                  className="grid h-10 w-10 place-items-center rounded-full text-ink/55 transition-colors hover:bg-ink/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
                 >
                   <Code2
+                    size={16}
+                    aria-hidden="true"
+                  />
+                </a>
+              )}
+              {liveUrl && (
+                <a
+                  href={liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Live demo for ${project.title}`}
+                  title="Live demo"
+                  className="grid h-10 w-10 place-items-center rounded-full text-ink/55 transition-colors hover:bg-ink/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+                >
+                  <ExternalLink
                     size={15}
                     aria-hidden="true"
                   />
-                  Source code
-                  <ExternalLink
-                    size={12}
-                    aria-hidden="true"
-                  />
-                </a>
-              )}
-              {project.liveUrl && (
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex min-h-10 items-center gap-2 rounded-full bg-ink px-4 text-xs text-paper transition hover:bg-ink/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
-                >
-                  Live demo
-                  <ExternalLink
-                    size={12}
-                    aria-hidden="true"
-                  />
                 </a>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </article>
   );
+}
+
+function ProjectMedia({ project }: { project: Project }) {
+  const [hasImageError, setHasImageError] = useState(false);
+  const category = project.category ?? "web";
+  const imageUrl = safeExternalUrl(project.coverImageUrl);
+
+  return (
+    <div
+      className={`project-list-card__media relative overflow-hidden border-b border-ink/10 bg-linear-to-br from-teal-500/10 via-ink/5 to-transparent ${category === "networking" ? "aspect-[16/8] sm:aspect-[16/7]" : "aspect-[16/6] sm:aspect-[16/5]"}`}
+    >
+      {imageUrl && !hasImageError ? (
+        <img
+          src={imageUrl}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          onError={() => setHasImageError(true)}
+          className={`h-full w-full transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none ${category === "networking" ? "object-contain p-4" : "object-cover"}`}
+        />
+      ) : (
+        <div className="flex h-full flex-col items-center justify-center gap-2 text-ink/40">
+          {hasImageError ? (
+            <ImageOff
+              size={25}
+              strokeWidth={1.4}
+              aria-hidden="true"
+            />
+          ) : (
+            <Code2
+              size={27}
+              strokeWidth={1.4}
+              aria-hidden="true"
+            />
+          )}
+          <span className="font-mono text-[9px] uppercase tracking-[0.16em]">
+            {hasImageError ? "Preview unavailable" : "Project preview"}
+          </span>
+        </div>
+      )}
+      {category === "networking" && imageUrl && !hasImageError && (
+        <span className="absolute bottom-2.5 left-2.5 rounded-full border border-ink/10 bg-surface/90 px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider text-ink/65 backdrop-blur">
+          Network topology
+        </span>
+      )}
+    </div>
+  );
+}
+
+function safeExternalUrl(value: string | null | undefined) {
+  if (!value?.trim()) return null;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.toString()
+      : null;
+  } catch {
+    return null;
+  }
 }

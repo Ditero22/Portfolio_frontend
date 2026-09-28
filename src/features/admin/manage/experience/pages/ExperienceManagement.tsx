@@ -206,7 +206,7 @@ export default function ExperienceManagement() {
   }
 
   return (
-    <main className="max-w-5xl">
+    <div className="max-w-5xl">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-5xl text-ink">Experience</h1>
@@ -615,6 +615,6 @@ export default function ExperienceManagement() {
           </div>
         </div>
       </Modal>
-    </main>
+    </div>
   );
 }

@@ -9,6 +9,7 @@ import { resourceGroups } from "../../resources/data/resources";
 import GearCard from "../../gear/components/GearCard";
 import ResourceCard from "../../resources/components/ResourceCard";
 import ExperiencePreview from "./ExperiencePreview";
+import LatestBlogPreview from "./LatestBlogPreview";
 import PortfolioContentPreviews from "./PortfolioContentPreviews";
 
 function SectionHeading({
@@ -104,9 +105,10 @@ export default function PortfolioPreview() {
           </div>
         )}
       </section>
+      <LatestBlogPreview />
       <section className="portfolio-reveal">
         <SectionHeading
-          number="03"
+          number="04"
           title="Gear"
           href="/gear"
         >
@@ -129,7 +131,7 @@ export default function PortfolioPreview() {
       </section>
       <section className="portfolio-reveal">
         <SectionHeading
-          number="04"
+          number="05"
           title="Resources"
           href="/resources"
         >
@@ -139,16 +141,25 @@ export default function PortfolioPreview() {
         <div className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-ink/45">
           <BookOpen size={14} /> Always learning
         </div>
-        <CardCarousel label="Resources">
+        <div className="landing-resource-list">
           {resourceGroups
-            .flatMap((group) => group.resources)
-            .map((resource) => (
+            .flatMap((group) =>
+              group.resources.map((resource, index) => ({
+                resource,
+                groupTitle: group.title,
+                index,
+              })),
+            )
+            .slice(0, 4)
+            .map(({ resource, groupTitle, index }) => (
               <ResourceCard
                 key={resource.title}
                 resource={resource}
+                groupTitle={groupTitle}
+                index={index}
               />
             ))}
-        </CardCarousel>
+        </div>
       </section>
       <PortfolioContentPreviews />
     </div>

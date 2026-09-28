@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { BriefcaseBusiness, CircleCheck, CircleOff } from "lucide-react";
 import { Modal } from "@/shared/components/ui";
+import ResumeManager from "../components/ResumeManager";
 import {
   getAdminHiringStatus,
   saveAdminHiringStatus,
@@ -54,7 +55,7 @@ export default function SettingsManagement() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl pb-20">
+    <div className="mx-auto max-w-4xl pb-20">
       <header className="mb-8">
         <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">
           Portfolio / Admin
@@ -135,6 +136,8 @@ export default function SettingsManagement() {
         )}
       </section>
 
+      <ResumeManager />
+
       <Modal
         isOpen={pending !== null}
         onClose={() => !saving && setPending(null)}
@@ -167,6 +170,6 @@ export default function SettingsManagement() {
           </div>
         </div>
       </Modal>
-    </main>
+    </div>
   );
 }

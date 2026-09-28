@@ -38,7 +38,7 @@ function ArticleLoader({ slug }: { slug?: string }) {
     });
   }, [slug, attempt]);
   return (
-    <main className="public-page public-page--article">
+    <div className="public-page public-page--article">
       <div className="public-page-article">
         <Link
           to="/blog"
@@ -71,6 +71,6 @@ function ArticleLoader({ slug }: { slug?: string }) {
           <h1 className="text-4xl text-ink">Blog post not found</h1>
         )}
       </div>
-    </main>
+    </div>
   );
 }

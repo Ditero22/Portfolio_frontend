@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowDownRight,
   CalendarDays,
@@ -8,6 +8,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { getHiringStatus } from "@/features/public/availability/services/availability.service";
+import ResumeDownload from "@/features/public/resume/components/ResumeDownload";
 import { publicApiRefreshIntervalMs } from "@/shared/api";
 import profileFormal from "@/assets/profile-formal.png";
 import profileLookUp from "@/assets/profile-look-up.png";
@@ -48,9 +49,26 @@ function ProfilePortrait() {
     "follow",
   );
   const [followPose, setFollowPose] = useState(profileFormal);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const portraitFrame = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
+
+    mediaQuery.addEventListener("change", updatePreference);
+    return () => mediaQuery.removeEventListener("change", updatePreference);
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      return;
+    }
+
     const duration =
       phase === "follow"
         ? 10_000
@@ -69,10 +87,10 @@ function ProfilePortrait() {
             : "follow";
     const timer = window.setTimeout(() => setPhase(next), duration);
     return () => window.clearTimeout(timer);
-  }, [phase]);
+  }, [phase, prefersReducedMotion]);
 
   useEffect(() => {
-    if (phase !== "follow") return;
+    if (phase !== "follow" || prefersReducedMotion) return;
     const followCursor = (event: globalThis.PointerEvent) => {
       const bounds = portraitFrame.current?.getBoundingClientRect();
       if (!bounds) return;
@@ -83,14 +101,15 @@ function ProfilePortrait() {
     };
     window.addEventListener("pointermove", followCursor);
     return () => window.removeEventListener("pointermove", followCursor);
-  }, [phase]);
+  }, [phase, prefersReducedMotion]);
 
+  const visiblePhase = prefersReducedMotion ? "formal" : phase;
   const photo =
-    phase === "follow"
+    visiblePhase === "follow"
       ? followPose
-      : phase === "formal"
+      : visiblePhase === "formal"
         ? profileFormal
-        : phase === "smile"
+        : visiblePhase === "smile"
           ? profileSmile
           : profileWink;
 
@@ -162,6 +181,7 @@ function LandingHero() {
           </div>
           <div className="landing-hero-actions">
             <HiringStatus />
+            <ResumeDownload />
             <a
               href="mailto:karldietherortega@gmail.com"
               className="landing-secondary-action"
@@ -182,25 +202,47 @@ function LandingHero() {
 }
 
 function HiringStatus() {
-  const [isHired, setIsHired] = useState(false);
+  const [isHired, setIsHired] = useState<boolean | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  const refresh = useCallback(async (signal?: AbortSignal) => {
-    try {
-      const status = await getHiringStatus(signal);
-      if (!signal?.aborted) setIsHired(status.isHired);
-    } catch {
-      // Keep the default available status when the settings service is offline.
-    } finally {
-      if (!signal?.aborted) setLoaded(true);
-    }
-  }, []);
-
   useEffect(() => {
-    const controller = new AbortController();
-    void Promise.resolve().then(() => refresh(controller.signal));
+    let active = true;
+    let request: AbortController | null = null;
+    let refreshQueued = false;
+
+    async function refresh() {
+      if (document.visibilityState === "hidden") return;
+      if (request) {
+        refreshQueued = true;
+        return;
+      }
+
+      const controller = new AbortController();
+      request = controller;
+      try {
+        const status = await getHiringStatus(controller.signal);
+        if (active && !controller.signal.aborted) {
+          setIsHired(
+            typeof status.isHired === "boolean" ? status.isHired : null,
+          );
+        }
+      } catch {
+        // Keep the last known value; the initial unknown state stays explicit.
+      } finally {
+        if (request === controller) {
+          request = null;
+          if (active && !controller.signal.aborted) setLoaded(true);
+          if (active && refreshQueued) {
+            refreshQueued = false;
+            void refresh();
+          }
+        }
+      }
+    }
+
+    void refresh();
     const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible") void refresh();
+      if (document.visibilityState === "visible" && !request) void refresh();
     }, publicApiRefreshIntervalMs);
     const onChanged = () => {
       if (document.visibilityState === "visible") void refresh();
@@ -212,25 +254,28 @@ function HiringStatus() {
     window.addEventListener("storage", onStorage);
     document.addEventListener("visibilitychange", onChanged);
     return () => {
-      controller.abort();
+      active = false;
+      request?.abort();
       window.clearInterval(timer);
       window.removeEventListener("portfolio-hiring-status-changed", onChanged);
       window.removeEventListener("storage", onStorage);
       document.removeEventListener("visibilitychange", onChanged);
     };
-  }, [refresh]);
+  }, []);
 
   return (
     <span
-      className={`landing-status-pill ${isHired ? "is-hired" : "is-available"}`}
+      className={`landing-status-pill ${isHired === null ? "is-unknown" : isHired ? "is-hired" : "is-available"}`}
       role="status"
       aria-live="polite"
     >
       <span className="landing-status-dot" />
       {loaded
-        ? isHired
-          ? "Currently hired"
-          : "Available for work"
+        ? isHired === null
+          ? "Availability unavailable"
+          : isHired
+            ? "Currently hired"
+            : "Available for work"
         : "Checking availability"}
     </span>
   );
