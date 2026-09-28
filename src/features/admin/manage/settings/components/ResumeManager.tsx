@@ -149,7 +149,7 @@ export default function ResumeManager() {
             />
           </span>
           <div>
-            <h2 className="text-xl text-ink">Public résumé</h2>
+            <h2 className="text-xl text-ink">Public resume</h2>
             <p className="mt-1 max-w-lg text-sm leading-6 text-ink/55">
               Upload a PDF or DOCX. New uploads become public automatically;
               previous versions stay here so you can switch back.
@@ -177,7 +177,7 @@ export default function ResumeManager() {
             size={15}
             aria-hidden="true"
           />
-          Upload new résumé
+          Upload new resume
         </button>
       </div>
 
@@ -204,7 +204,7 @@ export default function ResumeManager() {
           <p className="text-sm text-ink/50">Loading saved versions…</p>
         ) : versions.length === 0 ? (
           <p className="rounded-xl border border-dashed border-ink/15 px-4 py-6 text-center text-sm text-ink/50">
-            No résumé uploaded yet. Your first upload will appear here and on
+            No resume uploaded yet. Your first upload will appear here and on
             the public landing page.
           </p>
         ) : (
@@ -270,7 +270,7 @@ export default function ResumeManager() {
             setError(null);
           }
         }}
-        title={pendingFile ? "Publish new résumé" : "Switch public résumé"}
+        title={pendingFile ? "Publish new resume" : "Switch public resume"}
         size="sm"
       >
         <div className="space-y-5 text-ink">

@@ -51,7 +51,7 @@ export default function ResumeDownload() {
       className="landing-secondary-action"
       aria-label={`Download current resume: ${resume.fileName}`}
     >
-      Download résumé{" "}
+      Download resume{" "}
       <Download
         size={15}
         aria-hidden="true"
