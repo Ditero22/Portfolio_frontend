@@ -17,7 +17,7 @@ export default function ResourceCard({
       href={resource.href}
       target="_blank"
       rel="noopener noreferrer"
-      className="resource-library-row group"
+      className={`resource-library-row group${resource.label ? "" : " is-no-tag"}`}
     >
       <span className="resource-library-row__index" aria-hidden="true">
         {String(index + 1).padStart(2, "0")}
@@ -33,8 +33,16 @@ export default function ResourceCard({
         <span className="resource-library-row__description">
           {resource.description}
         </span>
+        {resource.bestFor && (
+          <span className="resource-library-row__best-for">
+            <span>Best for</span>
+            {resource.bestFor}
+          </span>
+        )}
       </span>
-      <span className="resource-library-row__tag">{resource.label}</span>
+      {resource.label && (
+        <span className="resource-library-row__tag">{resource.label}</span>
+      )}
       <ArrowUpRight
         className="resource-library-row__arrow"
         size={17}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Download, FileText, History, Upload } from "lucide-react";
-import { Modal } from "@/shared/components/ui";
+import { AdminStatusBadge, Modal } from "@/shared/components/ui";
+import { AdminContentSkeleton } from "@/shared/components/Loading";
 import {
   activateAdminResume,
   downloadAdminResumeVersion,
@@ -29,6 +30,7 @@ export default function ResumeManager() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [versions, setVersions] = useState<ResumeVersion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingActivationId, setPendingActivationId] = useState<string | null>(
@@ -37,19 +39,19 @@ export default function ResumeManager() {
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async (signal?: AbortSignal) => {
+    if (!signal?.aborted) {
+      setLoading(true);
+      setLoadError(null);
+    }
     try {
       const items = await getAdminResumeVersions(signal);
       if (!signal?.aborted) {
         setVersions(items);
         setError(null);
       }
-    } catch (loadError) {
+    } catch {
       if (!signal?.aborted) {
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Could not load saved resume versions.",
-        );
+        setLoadError("Could not load saved resume versions. Try again.");
       }
     } finally {
       if (!signal?.aborted) setLoading(false);
@@ -200,9 +202,25 @@ export default function ResumeManager() {
           <h3 className="text-sm font-medium">Saved versions</h3>
         </div>
 
+        {loadError && (
+          <div
+            role="alert"
+            className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-600"
+          >
+            <span>{loadError}</span>
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              className="rounded-lg border border-red-500/25 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-500/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
         {loading ? (
-          <p className="text-sm text-ink/50">Loading saved versions…</p>
-        ) : versions.length === 0 ? (
+          <AdminContentSkeleton label="saved resume versions" layout="list" rows={3} />
+        ) : loadError && versions.length === 0 ? null : versions.length === 0 ? (
           <p className="rounded-xl border border-dashed border-ink/15 px-4 py-6 text-center text-sm text-ink/50">
             No resume uploaded yet. Your first upload will appear here and on
             the public landing page.
@@ -225,13 +243,12 @@ export default function ResumeManager() {
                 </div>
                 <div className="flex items-center gap-2">
                   {version.isActive ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/10 px-2.5 py-1.5 text-xs text-teal-700">
-                      <Check
-                        size={13}
-                        aria-hidden="true"
-                      />
-                      Public now
-                    </span>
+                    <AdminStatusBadge variant="public">
+                      <span className="inline-flex items-center gap-1">
+                        <Check size={13} aria-hidden="true" />
+                        Public now
+                      </span>
+                    </AdminStatusBadge>
                   ) : (
                     <button
                       type="button"

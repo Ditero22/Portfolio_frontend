@@ -1,4 +1,4 @@
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 import type { Project } from "../types/project";
 
 export const projectsChangedEvent = "portfolio-projects-changed";
@@ -16,10 +16,11 @@ export function notifyProjectsChanged() {
 }
 
 export async function getProjects(signal?: AbortSignal): Promise<Project[]> {
-  const response = await fetch(`${API_URL}/projects`, {
+  const response = await apiFetch(`${API_URL}/projects`, {
     signal,
     cache: "no-store",
   });
-  if (!response.ok) throw new Error("Failed to load projects.");
+  if (!response.ok)
+    throw await apiResponseError(response, "Failed to load projects.");
   return response.json();
 }

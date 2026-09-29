@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Plus } from "lucide-react";
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 import { Modal } from "@/shared/components/ui";
+import { AdminContentSkeleton } from "@/shared/components/Loading";
 import { getAccessToken } from "@/features/auth/services/authStorage";
 import type {
   Project,
@@ -25,6 +26,8 @@ export default function ProjectManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
   const [formError, setFormError] = useState<string | null>(null);
   const [visibilityError, setVisibilityError] = useState<string | null>(null);
   const [updatingVisibility, setUpdatingVisibility] = useState<string | null>(
@@ -62,7 +65,7 @@ export default function ProjectManagement() {
     setIsSubmitting(true);
     setOrderError(null);
     try {
-      const response = await fetch(`${API_URL}/admin/projects/order`, {
+      const response = await apiFetch(`${API_URL}/admin/projects/order`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${getAccessToken()}`,
@@ -73,7 +76,8 @@ export default function ProjectManagement() {
         }),
       });
       if (!response.ok)
-        throw new Error(
+        throw await apiResponseError(
+          response,
           response.status === 409
             ? "Projects changed. Refresh the page before reordering."
             : "Failed to save order. Please try again.",
@@ -94,23 +98,29 @@ export default function ProjectManagement() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch(`${API_URL}/admin/projects`, {
+    apiFetch(`${API_URL}/admin/projects`, {
       headers: { Authorization: `Bearer ${getAccessToken()}` },
       signal: controller.signal,
     })
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to load projects.");
+      .then(async (response) => {
+        if (!response.ok)
+          throw await apiResponseError(response, "Failed to load projects.");
         return response.json() as Promise<Project[]>;
       })
       .then((data) => {
         if (!controller.signal.aborted) setItems(data);
       })
-      .catch(() => {
+      .catch((error) => {
         if (!controller.signal.aborted)
-          setLoadError("Failed to load projects.");
+          setLoadError(
+            error instanceof Error ? error.message : "Failed to load projects.",
+          );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
       });
     return () => controller.abort();
-  }, []);
+  }, [reloadKey]);
 
   function closeForm() {
     if (!submittingRef.current) {
@@ -200,7 +210,7 @@ export default function ProjectManagement() {
         setUploadedCoverImageUrl(imageUrl);
       }
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_URL}/projects${editing ? `/${encodeURIComponent(editing.id)}` : ""}`,
         {
           method: editing ? "PATCH" : "POST",
@@ -212,7 +222,10 @@ export default function ProjectManagement() {
         },
       );
       if (!response.ok)
-        throw new Error("Failed to save project. Please try again.");
+        throw await apiResponseError(
+          response,
+          "Failed to save project. Please try again.",
+        );
       const project: Project = await response.json();
       setItems((current) =>
         editing
@@ -238,7 +251,7 @@ export default function ProjectManagement() {
     setUpdatingVisibility(project.id);
     setVisibilityError(null);
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_URL}/projects/${encodeURIComponent(project.id)}`,
         {
           method: "PATCH",
@@ -250,7 +263,8 @@ export default function ProjectManagement() {
         },
       );
       if (!response.ok)
-        throw new Error(
+        throw await apiResponseError(
+          response,
           "Failed to update project visibility. Please try again.",
         );
       const updated: Project = await response.json();
@@ -277,7 +291,7 @@ export default function ProjectManagement() {
     setIsSubmitting(true);
     setDeleteError(null);
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_URL}/projects/${encodeURIComponent(deleting.id)}`,
         {
           method: "DELETE",
@@ -285,7 +299,10 @@ export default function ProjectManagement() {
         },
       );
       if (!response.ok)
-        throw new Error("Failed to delete project. Please try again.");
+        throw await apiResponseError(
+          response,
+          "Failed to delete project. Please try again.",
+        );
       setItems((current) => current.filter((item) => item.id !== deleting.id));
       notifyProjectsChanged();
       setDeleting(null);
@@ -300,7 +317,7 @@ export default function ProjectManagement() {
   }
 
   return (
-    <div className="max-w-5xl">
+    <div className="admin-outlet-page">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-5xl text-ink">Projects</h1>
@@ -324,15 +341,24 @@ export default function ProjectManagement() {
           Add project
         </button>
       </div>
-      {loadError && (
-        <p
-          role="alert"
-          className="mt-6 text-sm text-red-500"
-        >
-          {loadError}
-        </p>
-      )}
-      <ProjectTable
+      {isLoading ? (
+        <div className="mt-8">
+          <AdminContentSkeleton
+            label="projects"
+            layout="responsive-table"
+            rows={4}
+            columns={6}
+            tableMinWidth={880}
+          />
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-600">
+          <span>{loadError}</span>
+          <button type="button" onClick={() => { setIsLoading(true); setLoadError(null); setReloadKey((key) => key + 1); }} className="rounded-lg border border-red-500/25 px-3 py-2 font-medium text-red-700 transition hover:bg-red-500/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+            Try again
+          </button>
+        </div>
+      ) : <ProjectTable
         projects={orderedItems}
         isSubmitting={isSubmitting}
         updatingVisibility={updatingVisibility}
@@ -353,7 +379,7 @@ export default function ProjectManagement() {
           setDeleteError(null);
           setDeleting(project);
         }}
-      />
+      />}
       <Modal
         isOpen={pendingOrder !== null}
         onClose={() => {

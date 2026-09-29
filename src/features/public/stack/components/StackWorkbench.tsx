@@ -85,7 +85,7 @@ export default function StackWorkbench({
                       <a
                         href={tool.url}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="stack-tool__link"
                         aria-label={`Learn more about ${tool.title}`}
                       >

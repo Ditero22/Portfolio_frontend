@@ -3,6 +3,7 @@ import {
   ArrowUpRight,
   Award,
   BadgeCheck,
+  BookOpen,
   BriefcaseBusiness,
   Clock3,
   Code2,
@@ -237,7 +238,7 @@ function Dashboard() {
     `${visibility.published} public · ${visibility.hidden} hidden`;
 
   return (
-    <div className="mx-auto max-w-6xl pb-20">
+    <div className="admin-outlet-page">
       <header className="mb-9 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">
@@ -365,6 +366,17 @@ function Dashboard() {
               detail={projectDetail}
               Icon={FolderKanban}
               href={adminRoutes.projects}
+            />
+            <ManagementCard
+              label="Resources"
+              value={content?.resources.total ?? "—"}
+              detail={
+                content
+                  ? statusDetail(content.resources)
+                  : "Loading curated links…"
+              }
+              Icon={BookOpen}
+              href={adminRoutes.resources}
             />
             <ManagementCard
               label="Experience"

@@ -242,7 +242,7 @@ export default function ProjectDetailsPage() {
                 <a
                   href={project.sourceUrl}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="inline-flex min-h-11 items-center gap-2 rounded-full border border-ink/15 px-4 text-xs text-ink/70 transition hover:border-ink/35 hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-500"
                 >
                   <Code2
@@ -260,7 +260,7 @@ export default function ProjectDetailsPage() {
                 <a
                   href={project.liveUrl}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="inline-flex min-h-11 items-center gap-2 rounded-full bg-ink px-4 text-xs text-paper transition hover:bg-ink/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
                 >
                   Live demo

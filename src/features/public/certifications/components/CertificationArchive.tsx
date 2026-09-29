@@ -21,12 +21,26 @@ export default function CertificationArchive({
             <span className="credential-record__number">
               {String(index + 1).padStart(2, "0")}
             </span>
-            <span className="credential-record__seal">
-              <Award
-                size={22}
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
+            <span className="credential-record__visual">
+              {item.imageUrl ? (
+                <a
+                  href={item.imageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="credential-record__image"
+                  aria-label={`View certificate image for ${item.title}`}
+                >
+                  <img
+                    src={item.imageUrl}
+                    alt={`${item.title} certificate`}
+                    loading="lazy"
+                  />
+                </a>
+              ) : (
+                <span className="credential-record__seal">
+                  <Award size={22} strokeWidth={1.5} aria-hidden="true" />
+                </span>
+              )}
             </span>
             <div className="credential-record__content">
               <div className="credential-record__meta">
@@ -40,7 +54,7 @@ export default function CertificationArchive({
               <a
                 href={item.url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="credential-record__link"
               >
                 <span>View credential</span>

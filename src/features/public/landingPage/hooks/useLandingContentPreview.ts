@@ -6,7 +6,9 @@ import type {
   PortfolioContentKind,
 } from "../../portfolioContent/types/portfolioContent";
 
-const contentKinds: PortfolioContentKind[] = [
+type LandingPreviewKind = Exclude<PortfolioContentKind, "resources">;
+
+const contentKinds: LandingPreviewKind[] = [
   "stack",
   "certifications",
   "recommendations",
@@ -19,7 +21,7 @@ interface PreviewSectionState {
   unavailable: boolean;
 }
 
-type PreviewContentState = Record<PortfolioContentKind, PreviewSectionState>;
+type PreviewContentState = Record<LandingPreviewKind, PreviewSectionState>;
 
 const initialState: PreviewContentState = {
   stack: { items: [], loading: true, unavailable: false },
@@ -32,9 +34,9 @@ export function useLandingContentPreview() {
   const [sections, setSections] = useState(initialState);
 
   useEffect(() => {
-    const requests = new Map<PortfolioContentKind, AbortController>();
+    const requests = new Map<LandingPreviewKind, AbortController>();
 
-    const refresh = (kind?: PortfolioContentKind) => {
+    const refresh = (kind?: LandingPreviewKind) => {
       const requestedKinds = kind ? [kind] : contentKinds;
 
       requestedKinds.forEach((requestedKind) => {
@@ -77,12 +79,24 @@ export function useLandingContentPreview() {
     const onContentChanged = (event: Event) => {
       const changedKind = (event as CustomEvent<{ kind?: string }>).detail
         ?.kind;
+      if (!changedKind) {
+        refresh();
+        return;
+      }
+
       const validKind = contentKinds.find((kind) => kind === changedKind);
-      refresh(validKind);
+      if (validKind) refresh(validKind);
     };
 
     const onStorage = (event: StorageEvent) => {
-      if (event.key === "portfolio-content-changed") refresh();
+      if (event.key !== "portfolio-content-changed") return;
+      const changedKind = event.newValue?.split("-")[0];
+      if (!changedKind || changedKind === "all") {
+        refresh();
+        return;
+      }
+      const validKind = contentKinds.find((kind) => kind === changedKind);
+      if (validKind) refresh(validKind);
     };
 
     const onVisibilityChange = () => {

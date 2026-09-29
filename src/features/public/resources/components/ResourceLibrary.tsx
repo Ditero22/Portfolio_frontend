@@ -1,8 +1,15 @@
-import { Search, SlidersHorizontal } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 
 import type { ResourceGroup } from "../types/resource";
 import ResourceCard from "./ResourceCard";
+
+const RESOURCE_PAGE_SIZE = 10;
 
 export default function ResourceLibrary({
   groups,
@@ -11,6 +18,7 @@ export default function ResourceLibrary({
 }) {
   const [selectedGroup, setSelectedGroup] = useState("All");
   const [query, setQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const entries = useMemo(
     () =>
@@ -25,20 +33,40 @@ export default function ResourceLibrary({
   );
 
   const normalizedQuery = query.trim().toLocaleLowerCase();
-  const filteredEntries = entries.filter(({ resource, group }) => {
-    const matchesGroup =
-      selectedGroup === "All" || group.title === selectedGroup;
-    const searchText = [
-      resource.title,
-      resource.description,
-      resource.label,
-      group.title,
-    ]
-      .join(" ")
-      .toLocaleLowerCase();
+  const filteredEntries = useMemo(
+    () =>
+      entries.filter(({ resource, group }) => {
+        const matchesGroup =
+          selectedGroup === "All" || group.title === selectedGroup;
+        const searchText = [
+          resource.title,
+          resource.description,
+          resource.bestFor,
+          resource.label,
+          group.title,
+        ]
+          .join(" ")
+          .toLocaleLowerCase();
 
-    return matchesGroup && searchText.includes(normalizedQuery);
-  });
+        return matchesGroup && searchText.includes(normalizedQuery);
+      }),
+    [entries, normalizedQuery, selectedGroup],
+  );
+  const pageCount = Math.max(
+    1,
+    Math.ceil(filteredEntries.length / RESOURCE_PAGE_SIZE),
+  );
+  const page = Math.min(currentPage, pageCount);
+  const pageStart = (page - 1) * RESOURCE_PAGE_SIZE;
+  const visibleEntries = filteredEntries.slice(
+    pageStart,
+    pageStart + RESOURCE_PAGE_SIZE,
+  );
+  const pageEnd = Math.min(
+    pageStart + RESOURCE_PAGE_SIZE,
+    filteredEntries.length,
+  );
+  const showPagination = filteredEntries.length > RESOURCE_PAGE_SIZE;
   const activeDescription = groups.find(
     (group) => group.title === selectedGroup,
   )?.description;
@@ -52,7 +80,10 @@ export default function ResourceLibrary({
           <input
             type="search"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Search tools, topics, or references"
           />
           <kbd aria-hidden="true">⌕</kbd>
@@ -69,7 +100,10 @@ export default function ResourceLibrary({
           <button
             type="button"
             aria-pressed={selectedGroup === "All"}
-            onClick={() => setSelectedGroup("All")}
+            onClick={() => {
+              setSelectedGroup("All");
+              setCurrentPage(1);
+            }}
           >
             All
             <span>{entries.length}</span>
@@ -79,7 +113,10 @@ export default function ResourceLibrary({
               key={group.title}
               type="button"
               aria-pressed={selectedGroup === group.title}
-              onClick={() => setSelectedGroup(group.title)}
+              onClick={() => {
+                setSelectedGroup(group.title);
+                setCurrentPage(1);
+              }}
             >
               {group.title}
               <span>{group.resources.length}</span>
@@ -105,16 +142,14 @@ export default function ResourceLibrary({
 
       {filteredEntries.length ? (
         <div className="resource-library__list">
-          {filteredEntries.map(
-            ({ resource, group, index }, entryIndex) => (
-              <ResourceCard
-                key={`${group.title}-${resource.title}`}
-                resource={resource}
-                groupTitle={group.title}
-                index={selectedGroup === "All" ? entryIndex : index}
-              />
-            ),
-          )}
+          {visibleEntries.map(({ resource, group, index }, entryIndex) => (
+            <ResourceCard
+              key={resource.id ?? `${group.title}-${resource.title}`}
+              resource={resource}
+              groupTitle={group.title}
+              index={selectedGroup === "All" ? pageStart + entryIndex : index}
+            />
+          ))}
         </div>
       ) : (
         <div className="resource-library__empty">
@@ -125,11 +160,66 @@ export default function ResourceLibrary({
             onClick={() => {
               setQuery("");
               setSelectedGroup("All");
+              setCurrentPage(1);
             }}
           >
             Clear filters
           </button>
         </div>
+      )}
+
+      {showPagination && (
+        <nav
+          className="resource-library__pagination"
+          aria-label="Resource pages"
+        >
+          <p
+            className="resource-library__pagination-summary"
+            aria-live="polite"
+          >
+            <span>Showing</span>
+            <strong>
+              {pageStart + 1}–{pageEnd}
+            </strong>
+            <span>of {filteredEntries.length} resources</span>
+          </p>
+
+          <div className="resource-library__pagination-controls">
+            <button
+              className="resource-library__pagination-button"
+              type="button"
+              onClick={() => setCurrentPage(page - 1)}
+              disabled={page === 1}
+              aria-label="Previous page of resources"
+            >
+              <ChevronLeft size={16} aria-hidden="true" />
+              <span>Previous</span>
+            </button>
+
+            <span
+              className="resource-library__pagination-page"
+              role="status"
+              aria-label={`Page ${page} of ${pageCount}`}
+            >
+              <span aria-hidden="true">{String(page).padStart(2, "0")}</span>
+              <span aria-hidden="true">/</span>
+              <span aria-hidden="true">
+                {String(pageCount).padStart(2, "0")}
+              </span>
+            </span>
+
+            <button
+              className="resource-library__pagination-button is-next"
+              type="button"
+              onClick={() => setCurrentPage(page + 1)}
+              disabled={page === pageCount}
+              aria-label="Next page of resources"
+            >
+              <span>Next</span>
+              <ChevronRight size={16} aria-hidden="true" />
+            </button>
+          </div>
+        </nav>
       )}
     </div>
   );

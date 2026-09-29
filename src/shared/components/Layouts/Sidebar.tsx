@@ -8,9 +8,11 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquareQuote,
+  Menu,
   Monitor,
   Newspaper,
   Settings,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
@@ -40,12 +42,13 @@ const secondaryNavigation = [
 const adminNavigation = [
   { label: "Dashboard", path: adminRoutes.dashboard, end: true, icon: LayoutDashboard },
   { label: "Blog", path: adminRoutes.blog, icon: Newspaper },
+  { label: "Resources", path: adminRoutes.resources, icon: Bookmark },
   { label: "Projects", path: adminRoutes.projects, icon: FolderKanban },
   { label: "Experience", path: adminRoutes.experience, icon: BriefcaseBusiness },
   { label: "Stack", path: adminRoutes.stack, icon: Layers3 },
-  { label: "Skills", path: adminRoutes.skills, icon: Code2 },
   { label: "Certifications", path: adminRoutes.certifications, icon: Award },
   { label: "Recommendations", path: adminRoutes.recommendations, icon: MessageSquareQuote },
+  { label: "Skills", path: adminRoutes.skills, icon: Code2 },
   { label: "Settings", path: adminRoutes.settings, icon: Settings },
 ];
 
@@ -187,7 +190,7 @@ function Sidebar() {
 
   return (
     <>
-      <header className="sidebar-mobile-header fixed left-0 top-0 z-[100] flex h-12 w-full items-center px-3 md:hidden">
+      <header className="sidebar-mobile-header fixed left-0 top-0 z-[100] flex h-12 w-full items-center justify-between px-3 md:hidden">
         <NavLink
           to={isAdmin ? adminRoutes.dashboard : "/"}
           end
@@ -201,20 +204,23 @@ function Sidebar() {
         <button
           type="button"
           onClick={() => setIsOpen((previous) => !previous)}
-          className="sidebar-mobile-menu-button absolute right-4 flex h-8 w-8 items-center justify-center"
+          className="sidebar-mobile-menu-button grid h-11 w-11 shrink-0 place-items-center"
           aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
           aria-controls="mobile-navigation"
         >
-          {isOpen ? "×" : "☰"}
+          {isOpen ? (
+            <X size={19} strokeWidth={1.8} aria-hidden="true" />
+          ) : (
+            <Menu size={19} strokeWidth={1.8} aria-hidden="true" />
+          )}
         </button>
       </header>
 
       <div
         id="mobile-navigation"
-        className={`sidebar-mobile-menu fixed left-0 top-12 z-[90] flex h-[calc(100dvh-3rem)] w-full flex-col overflow-hidden transition-transform duration-500 ease-in-out md:hidden ${
-          isOpen ? "translate-y-0" : "-translate-y-full"
-        }`}
+        className="sidebar-mobile-menu fixed left-0 top-12 z-[90] flex h-[calc(100dvh-3rem)] w-full flex-col overflow-hidden md:hidden"
+        data-open={isOpen}
         aria-hidden={!isOpen}
         inert={!isOpen}
         onKeyDown={(event) => {

@@ -1,4 +1,4 @@
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 import type {
   PortfolioContent,
   PortfolioContentKind,
@@ -19,10 +19,14 @@ export async function getPortfolioContent(
   kind: PortfolioContentKind,
   signal?: AbortSignal,
 ): Promise<PortfolioContent[]> {
-  const response = await fetch(`${API_URL}/${kind}`, {
+  const response = await apiFetch(`${API_URL}/${kind}`, {
     signal,
     cache: "no-store",
   });
-  if (!response.ok) throw new Error("Could not load this portfolio section.");
+  if (!response.ok)
+    throw await apiResponseError(
+      response,
+      "Could not load this portfolio section.",
+    );
   return response.json();
 }

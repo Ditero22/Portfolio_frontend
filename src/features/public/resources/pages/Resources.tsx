@@ -1,8 +1,10 @@
 import ResourceLibrary from "../components/ResourceLibrary";
-import { resourceGroups } from "../data/resources";
+import { useResources } from "../hooks/useResources";
 import PublicPageFrame from "@/shared/components/Layouts/PublicPageFrame";
 
 export default function ResourcesPage() {
+  const { groups } = useResources();
+
   return (
     <PublicPageFrame
       number="04"
@@ -10,7 +12,7 @@ export default function ResourcesPage() {
       title="Resources"
       description="A practical library of documentation, learning platforms, and tools I return to while building and studying. Search by topic or browse a collection."
     >
-      <ResourceLibrary groups={resourceGroups} />
+      <ResourceLibrary groups={groups} />
     </PublicPageFrame>
   );
 }

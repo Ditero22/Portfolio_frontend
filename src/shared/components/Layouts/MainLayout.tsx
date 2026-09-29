@@ -30,7 +30,13 @@ function MainLayout() {
         tabIndex={-1}
         className="relative z-10 min-h-screen outline-none md:ml-60"
       >
-        <div className="mx-auto min-h-screen w-full max-w-6xl px-4 pt-20 sm:px-6 md:px-10 md:py-10">
+        <div
+          className={`mx-auto min-h-screen w-full max-w-6xl px-4 sm:px-6 ${
+            isAdmin
+              ? "pb-8 pt-16 md:px-8 md:py-8"
+              : "pt-20 md:px-10 md:py-10"
+          }`}
+        >
           <Outlet />
         </div>
       </main>

@@ -1,9 +1,4 @@
-import { API_URL } from "@/shared/api";
-
-type ApiMessage = {
-  code?: string;
-  message?: string;
-};
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 
 export type PinResetChallenge = {
   nonce: string;
@@ -11,17 +6,18 @@ export type PinResetChallenge = {
 };
 
 async function readResponse<T>(response: Response): Promise<T> {
-  const body = (await response.json()) as T & ApiMessage;
-
   if (!response.ok) {
-    throw new Error(body.message || "The request could not be completed.");
+    throw await apiResponseError(
+      response,
+      "The request could not be completed.",
+    );
   }
 
-  return body;
+  return response.json() as Promise<T>;
 }
 
 export async function requestPinResetChallenge() {
-  const response = await fetch(`${API_URL}/auth/pin-reset/challenge`, {
+  const response = await apiFetch(`${API_URL}/auth/pin-reset/challenge`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -37,7 +33,7 @@ export async function resetPinWithGoogle(input: {
   newPin: string;
   nonce: string;
 }) {
-  const response = await fetch(`${API_URL}/auth/pin-reset`, {
+  const response = await apiFetch(`${API_URL}/auth/pin-reset`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

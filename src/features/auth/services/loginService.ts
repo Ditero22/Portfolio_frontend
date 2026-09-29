@@ -1,9 +1,9 @@
 import type { QRLoginResponse } from "../../../types/auth";
 
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 
 export async function loginWithPin(pin: string): Promise<QRLoginResponse> {
-  const response = await fetch(`${API_URL}/auth/login`, {
+  const response = await apiFetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -11,11 +11,9 @@ export async function loginWithPin(pin: string): Promise<QRLoginResponse> {
     body: JSON.stringify({ pin }),
   });
 
-  const data = await response.json();
-
   if (!response.ok) {
-    throw new Error(data.message || "Login failed.");
+    throw await apiResponseError(response, "Login failed.");
   }
 
-  return data;
+  return response.json();
 }

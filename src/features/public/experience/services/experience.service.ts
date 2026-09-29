@@ -1,4 +1,4 @@
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 import type { Experience } from "../types/experience";
 
 export const experienceChangedEvent = "portfolio-experience-changed";
@@ -18,10 +18,11 @@ export function notifyExperienceChanged() {
 export async function getExperience(
   signal?: AbortSignal,
 ): Promise<Experience[]> {
-  const response = await fetch(`${API_URL}/experience`, {
+  const response = await apiFetch(`${API_URL}/experience`, {
     signal,
     cache: "no-store",
   });
-  if (!response.ok) throw new Error("Failed to load experience.");
+  if (!response.ok)
+    throw await apiResponseError(response, "Failed to load experience.");
   return response.json();
 }

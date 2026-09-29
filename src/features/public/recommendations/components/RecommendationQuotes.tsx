@@ -44,7 +44,7 @@ export default function RecommendationQuotes({
               <a
                 href={item.url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 aria-label={`View more about ${item.title}`}
                 className="recommendation-quote__link"
               >

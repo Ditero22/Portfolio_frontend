@@ -1,17 +1,17 @@
 import type { BlogPost, BlogPostSummary } from "../types/blog";
 
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 
 export async function getBlogPosts(
   signal?: AbortSignal,
 ): Promise<BlogPostSummary[]> {
-  const response = await fetch(`${API_URL}/blog`, {
+  const response = await apiFetch(`${API_URL}/blog`, {
     signal,
     cache: "no-store",
   });
 
   if (!response.ok) {
-    throw new Error("Failed to fetch blog posts.");
+    throw await apiResponseError(response, "Failed to fetch blog posts.");
   }
 
   return response.json();
@@ -22,7 +22,7 @@ async function getBlogPostById(
   signal?: AbortSignal,
 ): Promise<BlogPost | undefined> {
   try {
-    const response = await fetch(`${API_URL}/blog/${encodeURIComponent(id)}`, {
+    const response = await apiFetch(`${API_URL}/blog/${encodeURIComponent(id)}`, {
       signal,
       cache: "no-store",
     });
@@ -38,7 +38,7 @@ export async function getBlogPostBySlug(
   signal?: AbortSignal,
 ): Promise<BlogPost | undefined> {
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_URL}/blog/slug/${encodeURIComponent(slug)}`,
       { signal, cache: "no-store" },
     );

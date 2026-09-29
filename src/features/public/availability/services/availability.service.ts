@@ -1,4 +1,4 @@
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 
 export interface HiringStatus {
   isHired: boolean;
@@ -16,10 +16,11 @@ export function notifyHiringStatusChanged() {
 }
 
 export async function getHiringStatus(signal?: AbortSignal) {
-  const response = await fetch(`${API_URL}/settings/hiring`, {
+  const response = await apiFetch(`${API_URL}/settings/hiring`, {
     signal,
     cache: "no-store",
   });
-  if (!response.ok) throw new Error("Could not load hiring status.");
+  if (!response.ok)
+    throw await apiResponseError(response, "Could not load hiring status.");
   return (await response.json()) as HiringStatus;
 }

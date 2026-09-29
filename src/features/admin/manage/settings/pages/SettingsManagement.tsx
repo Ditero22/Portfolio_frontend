@@ -55,7 +55,7 @@ export default function SettingsManagement() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl pb-20">
+    <div className="admin-outlet-page">
       <header className="mb-8">
         <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">
           Portfolio / Admin

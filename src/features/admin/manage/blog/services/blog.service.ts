@@ -3,7 +3,7 @@ import type { BlogPost, BlogPostForm } from "@/features/public/blog/types/blog";
 
 import { getAccessToken } from "@/features/auth/services/authStorage";
 
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 
 function getAuthHeaders(): HeadersInit {
   const accessToken = getAccessToken();
@@ -18,24 +18,24 @@ function getAuthHeaders(): HeadersInit {
 }
 
 export async function getAdminBlogPosts(): Promise<BlogPost[]> {
-  const response = await fetch(`${API_URL}/admin/blog`, {
+  const response = await apiFetch(`${API_URL}/admin/blog`, {
     headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to fetch blog posts.");
+    throw await apiResponseError(response, "Failed to fetch blog posts.");
   }
 
   return response.json();
 }
 
 export async function getAdminBlogPost(id: string): Promise<BlogPost> {
-  const response = await fetch(`${API_URL}/admin/blog/${id}`, {
+  const response = await apiFetch(`${API_URL}/admin/blog/${id}`, {
     headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to fetch blog post.");
+    throw await apiResponseError(response, "Failed to fetch blog post.");
   }
 
   return response.json();
@@ -46,7 +46,7 @@ export async function uploadBlogImage(file: File): Promise<string> {
 
   formData.append("image", file);
 
-  const response = await fetch(`${API_URL}/blog/upload`, {
+  const response = await apiFetch(`${API_URL}/blog/upload`, {
     method: "POST",
 
     headers: {
@@ -57,9 +57,7 @@ export async function uploadBlogImage(file: File): Promise<string> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-
-    throw new Error(error?.message ?? "Failed to upload image.");
+    throw await apiResponseError(response, "Failed to upload image.");
   }
 
   const data = await response.json();
@@ -70,7 +68,7 @@ export async function uploadBlogImage(file: File): Promise<string> {
 export async function createAdminBlogPost(
   data: BlogPostForm,
 ): Promise<BlogPost> {
-  const response = await fetch(`${API_URL}/blog`, {
+  const response = await apiFetch(`${API_URL}/blog`, {
     method: "POST",
 
     headers: {
@@ -82,9 +80,7 @@ export async function createAdminBlogPost(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-
-    throw new Error(error?.message ?? "Failed to create blog post.");
+    throw await apiResponseError(response, "Failed to create blog post.");
   }
 
   const post: BlogPost = await response.json();
@@ -96,7 +92,7 @@ export async function updateAdminBlogPost(
   id: string,
   data: BlogPostForm,
 ): Promise<BlogPost> {
-  const response = await fetch(`${API_URL}/blog/${id}`, {
+  const response = await apiFetch(`${API_URL}/blog/${id}`, {
     method: "PATCH",
 
     headers: {
@@ -108,9 +104,7 @@ export async function updateAdminBlogPost(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-
-    throw new Error(error?.message ?? "Failed to update blog post.");
+    throw await apiResponseError(response, "Failed to update blog post.");
   }
 
   const post: BlogPost = await response.json();
@@ -119,7 +113,7 @@ export async function updateAdminBlogPost(
 }
 
 export async function deleteAdminBlogPost(id: string): Promise<void> {
-  const response = await fetch(`${API_URL}/blog/${id}`, {
+  const response = await apiFetch(`${API_URL}/blog/${id}`, {
     method: "DELETE",
 
     headers: {
@@ -128,9 +122,7 @@ export async function deleteAdminBlogPost(id: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-
-    throw new Error(error?.message ?? "Failed to delete blog post.");
+    throw await apiResponseError(response, "Failed to delete blog post.");
   }
   notifyBlogChanged();
 }

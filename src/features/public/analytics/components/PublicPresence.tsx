@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Eye } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch } from "@/shared/api";
 
 const visitorStorageKey = "portfolio-visitor-id";
 
@@ -31,7 +31,7 @@ export default function PublicPresence() {
   const [viewers, setViewers] = useState<number | null>(null);
 
   useEffect(() => {
-    void fetch(`${API_URL}/analytics/visit`, {
+    void apiFetch(`${API_URL}/analytics/visit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ visitorId, path: location.pathname }),

@@ -1,5 +1,9 @@
 export type PortfolioContentKind =
-  "stack" | "certifications" | "recommendations" | "skills";
+  | "stack"
+  | "certifications"
+  | "recommendations"
+  | "skills"
+  | "resources";
 
 export interface PortfolioContent {
   id: string;
@@ -9,6 +13,7 @@ export interface PortfolioContent {
   description: string | null;
   category: string | null;
   url: string | null;
+  imageUrl: string | null;
   published: boolean;
   sortOrder: number;
 }
@@ -16,4 +21,4 @@ export interface PortfolioContent {
 export type PortfolioContentInput = Pick<
   PortfolioContent,
   "title" | "subtitle" | "description" | "category" | "url" | "published"
->;
+> & { imageUrl?: string | null };

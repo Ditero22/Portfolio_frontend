@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import DOMPurify from "dompurify";
 import { Button } from "@/shared/components/ui";
 import BlogArticle from "@/features/public/blog/components/BlogArticle";
 import {
@@ -44,40 +45,29 @@ const blockNames: Record<BlogBlock["type"], string> = {
   link: "Link",
   embed: "Embed",
 };
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+const richTextOptions = {
+  ALLOWED_TAGS: ["strong", "b", "em", "i", "u", "br"],
+  ALLOWED_ATTR: [],
+};
 
 function safeRichText(value: string) {
-  const root = new DOMParser().parseFromString(value, "text/html").body;
-  const format = (node: Node): string => {
-    if (node.nodeType === Node.TEXT_NODE)
-      return escapeHtml(node.textContent ?? "");
-    if (node.nodeType !== Node.ELEMENT_NODE) return "";
-    const tag = (node as Element).tagName.toLowerCase();
-    const children = Array.from(node.childNodes).map(format).join("");
-    if (tag === "br") return "<br>";
-    return ["strong", "b"].includes(tag)
-      ? `<strong>${children}</strong>`
-      : ["em", "i"].includes(tag)
-        ? `<em>${children}</em>`
-        : tag === "u"
-          ? `<u>${children}</u>`
-          : children;
-  };
-  return Array.from(root.childNodes).map(format).join("");
+  return DOMPurify.sanitize(value, richTextOptions);
 }
 
 function editorHtml(value: string) {
   if (/<\/?[a-z][\s\S]*>/i.test(value)) return safeRichText(value);
-  return escapeHtml(value)
-    .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*([^*\n]+?)\*/g, "<em>$1</em>")
-    .replace(/\+\+([\s\S]+?)\+\+/g, "<u>$1</u>")
-    .replace(/\n/g, "<br>");
+  const escaped = value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return DOMPurify.sanitize(
+    escaped
+      .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*([^*\n]+?)\*/g, "<em>$1</em>")
+      .replace(/\+\+([\s\S]+?)\+\+/g, "<u>$1</u>")
+      .replace(/\n/g, "<br>"),
+    richTextOptions,
+  );
 }
 
 function RichTextField({

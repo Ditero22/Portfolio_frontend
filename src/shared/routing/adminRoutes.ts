@@ -11,6 +11,7 @@ export const adminRoutes = {
   certifications: `${adminBase}/manage/certifications`,
   recommendations: `${adminBase}/manage/recommendations`,
   skills: `${adminBase}/manage/skills`,
+  resources: `${adminBase}/manage/resources`,
   settings: `${adminBase}/settings`,
   fallback: `${adminBase}/*`,
 } as const;

@@ -1,4 +1,4 @@
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 import { getAccessToken } from "@/features/auth/services/authStorage";
 import type {
   Experience,
@@ -6,7 +6,7 @@ import type {
 } from "@/features/public/experience/types/experience";
 
 async function request(path: string, options: RequestInit = {}) {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await apiFetch(`${API_URL}${path}`, {
     ...options,
     headers: {
       Authorization: `Bearer ${getAccessToken()}`,
@@ -14,9 +14,9 @@ async function request(path: string, options: RequestInit = {}) {
     },
   });
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-    throw new Error(
-      error?.message ?? "Could not update experience. Please try again.",
+    throw await apiResponseError(
+      response,
+      "Could not update experience. Please try again.",
     );
   }
   return response;

@@ -1,38 +1,70 @@
 import path from "node:path";
+import { readFileSync, writeFileSync } from "node:fs";
 
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type Plugin, type ResolvedConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import {
+  apiConnectionMessage,
+  createApiSecurityHeaders,
+  normalizeApiBaseUrl,
+  resolveApiProxyTarget,
+} from "./src/shared/apiConfig.ts";
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "VITE_");
-  if (mode === "production") {
-    const apiUrl = env.VITE_API_URL?.trim();
-    if (!apiUrl) {
-      throw new Error(
-        "Set VITE_API_URL to the deployed backend API URL before building for production.",
+function apiSecurityHeaders(apiUrl: string): Plugin {
+  let config: ResolvedConfig;
+  return {
+    name: "portfolio-api-security-headers",
+    apply: "build",
+    configResolved(resolvedConfig) {
+      config = resolvedConfig;
+    },
+    writeBundle() {
+      const template = readFileSync(
+        path.resolve(config.publicDir, "_headers"),
+        "utf8",
       );
-    }
+      writeFileSync(
+        path.resolve(config.root, config.build.outDir, "_headers"),
+        createApiSecurityHeaders(template, apiUrl),
+      );
+    },
+  };
+}
 
-    const parsedApiUrl = new URL(apiUrl);
-    if (parsedApiUrl.protocol !== "https:") {
-      throw new Error("VITE_API_URL must use HTTPS in production.");
-    }
-
-    const hostname = parsedApiUrl.hostname.toLowerCase();
-    if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "::1" ||
-      hostname.endsWith(".localhost") ||
-      hostname.endsWith(".local")
-    ) {
-      throw new Error("VITE_API_URL must not point to a local host in production.");
-    }
-  }
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, process.cwd(), ["VITE_", "API_PROXY_"]);
+  const apiUrl =
+    command === "build"
+      ? normalizeApiBaseUrl(env.VITE_API_URL, { production: true })
+      : "/api";
+  const proxyTarget = resolveApiProxyTarget(env.API_PROXY_TARGET);
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), apiSecurityHeaders(apiUrl)],
+    server: {
+      host: "0.0.0.0",
+      port: 5173,
+      strictPort: true,
+      proxy: {
+        "/api": {
+          target: proxyTarget,
+          changeOrigin: true,
+          configure(proxy) {
+            proxy.on("error", (_error, _request, response) => {
+              if (!("writeHead" in response) || response.headersSent) return;
+              response.writeHead(502, { "Content-Type": "application/json" });
+              response.end(
+                JSON.stringify({
+                  code: "API_UNREACHABLE",
+                  message: apiConnectionMessage,
+                }),
+              );
+            });
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         "@": path.resolve(import.meta.dirname, "./src"),

@@ -51,7 +51,7 @@ function SectionHeading({
 export default function PortfolioPreview() {
   const { projects, experience, loading, unavailable } = usePortfolioPreview();
   return (
-    <div className="mt-16 space-y-20 md:mt-24 md:space-y-28">
+    <div className="mt-10 space-y-12 md:mt-12 md:space-y-14">
       <section className="portfolio-reveal">
         <SectionHeading
           number="01"
@@ -78,10 +78,10 @@ export default function PortfolioPreview() {
         ) : (
           <ProjectShowcase
             key={projects
-              .slice(0, 3)
+              .slice(0, 5)
               .map((project) => project.id)
               .join(":")}
-            projects={projects.slice(0, 3)}
+            projects={projects.slice(0, 5)}
           />
         )}
       </section>

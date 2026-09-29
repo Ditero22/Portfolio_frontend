@@ -12,6 +12,7 @@ export const resourceGroups: ResourceGroup[] = [
           "Practical guides and references for HTML, CSS, JavaScript, and browser APIs.",
         href: "https://developer.mozilla.org/en-US/docs/Web",
         label: "Web platform",
+        bestFor: "HTML, CSS, JavaScript, and browser API references",
       },
       {
         title: "React Learn",
@@ -19,6 +20,7 @@ export const resourceGroups: ResourceGroup[] = [
           "The official React learning path for components, state, events, and more.",
         href: "https://react.dev/learn",
         label: "React",
+        bestFor: "Learning React components, state, and events",
       },
       {
         title: "TypeScript Handbook",
@@ -26,6 +28,7 @@ export const resourceGroups: ResourceGroup[] = [
           "Clear documentation for writing safer JavaScript with TypeScript.",
         href: "https://www.typescriptlang.org/docs/",
         label: "TypeScript",
+        bestFor: "Writing safer JavaScript with TypeScript",
       },
       {
         title: "DevDocs",
@@ -33,6 +36,7 @@ export const resourceGroups: ResourceGroup[] = [
           "A fast, searchable reference that keeps developer documentation in one place.",
         href: "https://devdocs.io/",
         label: "Reference",
+        bestFor: "Quick, searchable API references",
       },
       {
         title: "Feather Icons",
@@ -40,6 +44,7 @@ export const resourceGroups: ResourceGroup[] = [
           "A clean set of open-source icons I can use in interfaces and projects.",
         href: "https://feathericons.com/",
         label: "Icons",
+        bestFor: "Simple, consistent icons for interface design",
       },
       {
         title: "Udemy",
@@ -47,6 +52,7 @@ export const resourceGroups: ResourceGroup[] = [
           "Courses and guided lessons I use to keep building new skills.",
         href: "https://www.udemy.com/",
         label: "Courses",
+        bestFor: "Structured courses and guided lessons",
       },
     ],
   },
@@ -60,6 +66,7 @@ export const resourceGroups: ResourceGroup[] = [
           "Free learning resources and Packet Tracer labs for practicing networking concepts.",
         href: "https://www.skillsforall.com/",
         label: "Networking",
+        bestFor: "Free networking lessons and Packet Tracer labs",
       },
       {
         title: "Packet Tracer",
@@ -67,6 +74,7 @@ export const resourceGroups: ResourceGroup[] = [
           "A network simulation tool for experimenting with routers, switches, and topologies.",
         href: "https://www.skillsforall.com/resources/lab-downloads",
         label: "Practice",
+        bestFor: "Practicing network topologies and device configuration",
       },
       {
         title: "ChatGPT",
@@ -74,6 +82,7 @@ export const resourceGroups: ResourceGroup[] = [
           "A learning companion I use to discuss Packet Tracer exercises, questions, and networking concepts as I practice.",
         href: "https://chatgpt.com/",
         label: "Study partner",
+        bestFor: "Discussing Packet Tracer exercises and networking concepts",
       },
     ],
   },
@@ -87,6 +96,7 @@ export const resourceGroups: ResourceGroup[] = [
           "Guides for version control, repositories, collaboration, and shipping code.",
         href: "https://docs.github.com/",
         label: "Version control",
+        bestFor: "Git workflows, repositories, and collaboration",
       },
       {
         title: "Vite Guide",
@@ -94,6 +104,7 @@ export const resourceGroups: ResourceGroup[] = [
           "Fast setup and documentation for modern frontend projects.",
         href: "https://vite.dev/guide/",
         label: "Tooling",
+        bestFor: "Setting up modern frontend tooling",
       },
     ],
   },
@@ -108,6 +119,7 @@ export const resourceGroups: ResourceGroup[] = [
           "Tutorial practice for Java, React, advanced networking, Node and Express, Drizzle and Prisma, and Supabase.",
         href: "https://www.youtube.com/",
         label: "Tutorials",
+        bestFor: "Hands-on tutorials across development topics",
       },
     ],
   },

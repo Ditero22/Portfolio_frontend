@@ -10,6 +10,7 @@ export default function CertificationsManagement() {
         singular: "Certification",
         description:
           "Manage the credentials and courses shown on your portfolio.",
+        imageUpload: true,
         titleLabel: "Certification name",
         subtitleLabel: "Issuing organization",
         descriptionLabel: "Credential ID or details",

@@ -1,5 +1,5 @@
 import { getAccessToken } from "@/features/auth/services/authStorage";
-import { API_URL } from "@/shared/api";
+import { API_URL, apiFetch, apiResponseError } from "@/shared/api";
 
 export interface AdminAnalytics {
   visitors: {
@@ -19,6 +19,7 @@ export interface AdminAnalytics {
     skills: ContentVisibility;
     certifications: ContentVisibility;
     recommendations: ContentVisibility;
+    resources: ContentVisibility;
   };
   settings: {
     isHired: boolean;
@@ -40,14 +41,13 @@ export interface ContentVisibility {
 }
 
 async function authorizedFetch(path: string, signal?: AbortSignal) {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await apiFetch(`${API_URL}${path}`, {
     signal,
     cache: "no-store",
     headers: { Authorization: `Bearer ${getAccessToken()}` },
   });
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-    throw new Error(error?.message ?? "Could not load admin analytics.");
+    throw await apiResponseError(response, "Could not load admin analytics.");
   }
   return response;
 }

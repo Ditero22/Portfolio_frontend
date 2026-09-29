@@ -4,11 +4,13 @@ import {
   ArrowUp,
   Eye,
   EyeOff,
+  ImagePlus,
   Pencil,
   Plus,
   Trash2,
 } from "lucide-react";
-import { Modal } from "@/shared/components/ui";
+import { AdminStatusBadge, Modal } from "@/shared/components/ui";
+import { AdminContentSkeleton } from "@/shared/components/Loading";
 import type {
   PortfolioContent,
   PortfolioContentInput,
@@ -19,6 +21,7 @@ import {
   getAdminContent,
   reorderAdminContent,
   saveAdminContent,
+  uploadPortfolioContentImage,
   updateContentVisibility,
 } from "../services/portfolioContent.service";
 
@@ -31,6 +34,9 @@ export interface PortfolioContentAdminConfig {
   subtitleLabel: string;
   descriptionLabel: string;
   categoryLabel: string;
+  urlLabel?: string;
+  urlRequired?: boolean;
+  imageUpload?: boolean;
   sampleData?: PortfolioContentInput[];
 }
 
@@ -64,9 +70,22 @@ export default function PortfolioContentManagement({
   const [importingSamples, setImportingSamples] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+
+  useEffect(
+    () => () => {
+      if (imagePreviewUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    },
+    [imagePreviewUrl],
+  );
 
   const refresh = useCallback(async () => {
     setError(null);
+    setLoading(true);
     try {
       setItems(await getAdminContent(config.kind));
     } catch (loadError) {
@@ -110,6 +129,10 @@ export default function PortfolioContentManagement({
       return;
     }
     const url = get("url");
+    if (config.urlRequired && !url) {
+      setError(`${config.urlLabel ?? "Link"} is required.`);
+      return;
+    }
     if (url && !/^https?:\/\//i.test(url)) {
       setError("Links must start with https:// or http://.");
       return;
@@ -121,6 +144,7 @@ export default function PortfolioContentManagement({
       description: get("description") || null,
       category: get("category") || null,
       url: url || null,
+      imageUrl: config.imageUpload ? get("imageUrl") || null : null,
       published: get("published") === "true",
     });
   }
@@ -130,9 +154,21 @@ export default function PortfolioContentManagement({
     setBusy(true);
     setError(null);
     try {
+      let saveData = pendingSave;
+      if (config.imageUpload && imageFile) {
+        const uploadedImageUrl = await uploadPortfolioContentImage(
+          config.kind,
+          imageFile,
+        );
+        saveData = { ...pendingSave, imageUrl: uploadedImageUrl };
+        setPendingSave(saveData);
+        setImageFile(null);
+        setImageUrl(uploadedImageUrl);
+        setImagePreviewUrl(uploadedImageUrl);
+      }
       const result = await saveAdminContent(
         config.kind,
-        pendingSave,
+        saveData,
         editing?.id,
       );
       setItems((current) =>
@@ -142,11 +178,13 @@ export default function PortfolioContentManagement({
       );
       setPendingSave(null);
       setEditorOpen(false);
+      setImageFile(null);
+      setImageUrl(null);
+      setImagePreviewUrl(null);
     } catch (saveError) {
       setError(
         saveError instanceof Error ? saveError.message : "Could not save item.",
       );
-      setPendingSave(null);
     } finally {
       setBusy(false);
     }
@@ -254,17 +292,32 @@ export default function PortfolioContentManagement({
   function openNew() {
     setEditing(null);
     setError(null);
+    setImageFile(null);
+    setImageUrl(null);
+    setImagePreviewUrl(null);
     setEditorOpen(true);
   }
 
   function openEdit(item: PortfolioContent) {
     setEditing(item);
     setError(null);
+    setImageFile(null);
+    setImageUrl(item.imageUrl);
+    setImagePreviewUrl(item.imageUrl);
     setEditorOpen(true);
   }
 
+  function closeEditor() {
+    if (busy) return;
+    setEditorOpen(false);
+    setPendingSave(null);
+    setImageFile(null);
+    setImageUrl(null);
+    setImagePreviewUrl(null);
+  }
+
   return (
-    <div className="mx-auto max-w-5xl pb-20">
+    <div className="admin-outlet-page">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">
@@ -304,9 +357,12 @@ export default function PortfolioContentManagement({
       {error && !editorOpen && (
         <p
           role="alert"
-          className="mb-5 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-600"
+          className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-600"
         >
           {error}
+          <button type="button" onClick={() => void refresh()} className="rounded-lg border border-red-500/25 px-3 py-1.5 font-medium text-red-700 transition hover:bg-red-500/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">
+            Try again
+          </button>
         </p>
       )}
       {pendingOrder && (
@@ -334,9 +390,7 @@ export default function PortfolioContentManagement({
       )}
 
       {loading ? (
-        <div className="rounded-2xl border border-ink/10 bg-surface p-8 text-sm text-ink/55">
-          Loading {config.title.toLowerCase()}…
-        </div>
+        <AdminContentSkeleton label={config.title.toLowerCase()} layout="list" rows={4} />
       ) : shownItems.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-ink/20 bg-surface p-9 text-center">
           <p className="text-lg text-ink">Nothing here yet</p>
@@ -355,37 +409,41 @@ export default function PortfolioContentManagement({
               <div className="flex gap-1">
                 <button
                   type="button"
-                  disabled={index === 0}
                   onClick={() => moveItem(index, -1)}
-                  className="rounded-md p-2 text-ink/55 hover:bg-ink/5 disabled:opacity-25"
+                  className="rounded-md p-2 text-ink/55 transition hover:bg-ink/5 focus-visible:outline-2 focus-visible:outline-teal-500 disabled:opacity-25"
                   aria-label={`Move ${item.title} up`}
+                  title="Move up"
+                  disabled={index === 0 || busy}
                 >
                   <ArrowUp size={15} />
                 </button>
                 <button
                   type="button"
-                  disabled={index === shownItems.length - 1}
                   onClick={() => moveItem(index, 1)}
-                  className="rounded-md p-2 text-ink/55 hover:bg-ink/5 disabled:opacity-25"
+                  className="rounded-md p-2 text-ink/55 transition hover:bg-ink/5 focus-visible:outline-2 focus-visible:outline-teal-500 disabled:opacity-25"
                   aria-label={`Move ${item.title} down`}
+                  title="Move down"
+                  disabled={index === shownItems.length - 1 || busy}
                 >
                   <ArrowDown size={15} />
                 </button>
               </div>
+              {config.imageUpload && item.imageUrl && (
+                <img
+                  src={item.imageUrl}
+                  alt=""
+                  loading="lazy"
+                  className="h-12 w-16 shrink-0 rounded-lg border border-ink/10 object-cover"
+                />
+              )}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="truncate font-medium text-ink">
                     {item.title}
                   </h2>
-                  <span
-                    className={`rounded-full px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider ${
-                      item.published
-                        ? "bg-teal-500/10 text-teal-700"
-                        : "bg-ink/5 text-ink/45"
-                    }`}
-                  >
+                  <AdminStatusBadge variant={item.published ? "public" : "quiet"}>
                     {item.published ? "Public" : "Hidden"}
-                  </span>
+                  </AdminStatusBadge>
                 </div>
                 <p className="mt-1 truncate text-xs text-ink/55">
                   {[item.subtitle, item.category].filter(Boolean).join(" · ") ||
@@ -400,22 +458,27 @@ export default function PortfolioContentManagement({
                   className="rounded-lg p-2.5 text-ink/60 transition hover:bg-ink/5 hover:text-ink"
                   aria-label={`${item.published ? "Hide" : "Publish"} ${item.title}`}
                   title={item.published ? "Hide from public" : "Publish"}
+                  disabled={busy}
                 >
                   {item.published ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
                 <button
                   type="button"
                   onClick={() => openEdit(item)}
-                  className="rounded-lg p-2.5 text-ink/60 transition hover:bg-ink/5 hover:text-ink"
+                  className="rounded-lg p-2.5 text-ink/60 transition hover:bg-ink/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-teal-500 disabled:opacity-50"
                   aria-label={`Edit ${item.title}`}
+                  title="Edit"
+                  disabled={busy}
                 >
                   <Pencil size={16} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setDeleteTarget(item)}
-                  className="rounded-lg p-2.5 text-red-500/70 transition hover:bg-red-500/10 hover:text-red-600"
+                  className="rounded-lg p-2.5 text-red-500/70 transition hover:bg-red-500/10 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-red-500 disabled:opacity-50"
                   aria-label={`Delete ${item.title}`}
+                  title="Delete"
+                  disabled={busy}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -460,12 +523,7 @@ export default function PortfolioContentManagement({
 
       <Modal
         isOpen={editorOpen}
-        onClose={() => {
-          if (!busy) {
-            setEditorOpen(false);
-            setPendingSave(null);
-          }
-        }}
+        onClose={closeEditor}
         title={`${editing ? "Edit" : "Add"} ${config.singular}`}
         size="lg"
       >
@@ -526,15 +584,75 @@ export default function PortfolioContentManagement({
             />
           </label>
           <label className="block text-sm">
-            Link (optional)
+            {config.urlLabel ?? "Link (optional)"}
             <input
               className={inputClass}
               name="url"
               defaultValue={editing?.url ?? ""}
               placeholder="https://"
               type="url"
+              required={config.urlRequired}
             />
           </label>
+          {config.imageUpload && (
+            <div className="space-y-3 rounded-xl border border-ink/10 bg-ink/[0.025] p-4">
+              <label className="block text-sm font-medium">
+                Certification image (optional)
+                <span className="mt-1 flex items-center gap-1.5 text-xs font-normal text-ink/50">
+                  <ImagePlus size={14} aria-hidden="true" />
+                  Upload a certificate image or screenshot, up to 5 MB.
+                </span>
+                <input
+                  className={`${inputClass} file:mr-3 file:rounded-md file:border-0 file:bg-ink/5 file:px-3 file:py-2 file:text-xs file:font-medium file:text-ink`}
+                  type="file"
+                  name="certificationImage"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={(event) => {
+                    const file = event.currentTarget.files?.[0];
+                    if (!file) return;
+                    const allowedTypes = [
+                      "image/jpeg",
+                      "image/png",
+                      "image/webp",
+                      "image/gif",
+                    ];
+              if (!allowedTypes.includes(file.type) || file.size > 5 * 1024 * 1024) {
+                      setError(
+                        "Choose a JPG, PNG, WebP, or GIF image under 5 MB.",
+                      );
+                      event.currentTarget.value = "";
+                      return;
+                    }
+                    setError(null);
+                    setImageFile(file);
+                    setImageUrl(null);
+                    setImagePreviewUrl(URL.createObjectURL(file));
+                  }}
+                />
+              </label>
+              <input type="hidden" name="imageUrl" value={imageUrl ?? ""} />
+              {(imagePreviewUrl || imageUrl) && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <img
+                    src={imagePreviewUrl ?? imageUrl ?? ""}
+                    alt="Certification preview"
+                    className="h-20 w-32 rounded-lg border border-ink/10 bg-paper object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImageUrl(null);
+                      setImagePreviewUrl(null);
+                    }}
+                    className="rounded-lg border border-ink/15 px-3 py-2 text-xs text-ink/70 transition hover:bg-ink/5 focus-visible:outline-2 focus-visible:outline-teal-500"
+                  >
+                    Remove image
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           <label className="block text-sm">
             Visibility
             <select
@@ -557,7 +675,7 @@ export default function PortfolioContentManagement({
           <div className="flex justify-end gap-3 border-t border-ink/10 pt-4">
             <button
               type="button"
-              onClick={() => setEditorOpen(false)}
+              onClick={closeEditor}
               className="rounded-lg border border-ink/15 px-4 py-2 text-sm"
             >
               Cancel
@@ -587,6 +705,18 @@ export default function PortfolioContentManagement({
               ? " It will be visible on your public portfolio."
               : " It will be saved as hidden content."}
           </p>
+          {config.imageUpload && imagePreviewUrl && (
+            <img
+              src={imagePreviewUrl}
+              alt="Certification image preview"
+              className="max-h-48 w-full rounded-xl border border-ink/10 object-contain"
+            />
+          )}
+          {error && (
+            <p role="alert" className="rounded-lg bg-red-500/5 p-3 text-sm text-red-600">
+              {error}
+            </p>
+          )}
           <div className="flex justify-end gap-3">
             <button
               type="button"
@@ -602,7 +732,11 @@ export default function PortfolioContentManagement({
               onClick={() => void save()}
               className="rounded-lg bg-ink px-4 py-2 text-sm text-paper disabled:opacity-50"
             >
-              {busy ? "Saving…" : "Confirm save"}
+              {busy
+                ? imageFile
+                  ? "Uploading image…"
+                  : "Saving…"
+                : "Confirm save"}
             </button>
           </div>
         </div>

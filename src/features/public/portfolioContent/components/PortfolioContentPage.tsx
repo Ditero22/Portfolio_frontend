@@ -3,6 +3,8 @@ import CertificationArchive from "@/features/public/certifications/components/Ce
 import RecommendationQuotes from "@/features/public/recommendations/components/RecommendationQuotes";
 import SkillMap from "@/features/public/skills/components/SkillMap";
 import StackWorkbench from "@/features/public/stack/components/StackWorkbench";
+import ResourceLibrary from "@/features/public/resources/components/ResourceLibrary";
+import { groupManagedResources } from "@/features/public/resources/utils/resourceContent";
 import PublicPageFrame from "@/shared/components/Layouts/PublicPageFrame";
 import { publicApiRefreshIntervalMs } from "@/shared/api";
 import { getPortfolioContent } from "../services/portfolioContent.service";
@@ -112,6 +114,7 @@ function ContentState({
     certifications: "certifications",
     recommendations: "recommendations",
     skills: "skills",
+    resources: "resources",
   };
   const sectionName = sectionNames[kind];
   const message = loading
@@ -147,5 +150,7 @@ function PortfolioContentSection({
       return <RecommendationQuotes items={items} />;
     case "certifications":
       return <CertificationArchive items={items} />;
+    case "resources":
+      return <ResourceLibrary groups={groupManagedResources(items)} />;
   }
 }

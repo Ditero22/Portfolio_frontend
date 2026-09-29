@@ -1,9 +1,9 @@
-const developmentApiUrl = import.meta.env.DEV
-  ? "http://localhost:5000/api"
-  : "";
+import { normalizeApiBaseUrl } from "./apiConfig";
 
-export const API_URL = (
-  import.meta.env.VITE_API_URL?.trim() || developmentApiUrl
-).replace(/\/+$/, "");
+export { apiFetch, apiResponseError, ApiRequestError } from "./apiTransport";
+
+export const API_URL = import.meta.env.DEV
+  ? "/api"
+  : normalizeApiBaseUrl(import.meta.env.VITE_API_URL, { production: true });
 
 export const publicApiRefreshIntervalMs = 60_000;

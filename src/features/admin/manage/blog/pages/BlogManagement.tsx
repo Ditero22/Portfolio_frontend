@@ -11,6 +11,7 @@ import {
 } from "../services/blog.service";
 
 import { Modal } from "@/shared/components/ui";
+import { AdminContentSkeleton } from "@/shared/components/Loading";
 
 import type { BlogPost, BlogPostForm } from "@/features/public/blog/types/blog";
 
@@ -40,6 +41,7 @@ function BlogManagement() {
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,15 +54,13 @@ function BlogManagement() {
   async function loadPosts() {
     try {
       setIsLoading(true);
-      setError(null);
+      setLoadError(null);
 
       const data = await getAdminBlogPosts();
 
       setPosts(data);
-    } catch (error) {
-      console.error(error);
-
-      setError("Failed to load blog posts.");
+    } catch {
+      setLoadError("Could not load blog posts. Check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -70,10 +70,15 @@ function BlogManagement() {
     let active = true;
     getAdminBlogPosts()
       .then((data) => {
-        if (active) setPosts(data);
+        if (active) {
+          setPosts(data);
+          setLoadError(null);
+        }
       })
       .catch(() => {
-        if (active) setError("Failed to load blog posts.");
+        if (active) {
+          setLoadError("Could not load blog posts. Check your connection and try again.");
+        }
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -202,7 +207,7 @@ function BlogManagement() {
     : emptyForm;
 
   return (
-    <div className="w-full">
+    <div className="admin-outlet-page">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -237,26 +242,23 @@ function BlogManagement() {
         </div>
       )}
 
-      <div
-        className="mt-8 flex gap-2"
-        aria-label="Post status"
-      >
+      <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Post status">
         {(["published", "drafts"] as const).map((value) => (
           <button
             key={value}
             type="button"
             aria-pressed={tab === value}
+            disabled={isLoading}
             onClick={() => setTab(value)}
-            className={
-              tab === value
-                ? "rounded-md bg-ink px-4 py-2 text-sm text-paper"
-                : "rounded-md border border-ink/20 px-4 py-2 text-sm text-ink/70"
-            }
+            className={`min-h-10 rounded-md border px-4 py-2 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 disabled:cursor-wait disabled:opacity-60 ${tab === value ? "border-ink bg-ink text-paper" : "border-ink/20 text-ink/70 hover:bg-ink/5"}`}
           >
             {value === "published" ? "Published" : "Drafts"} (
             {
-              posts.filter((post) => post.published === (value === "published"))
-                .length
+              isLoading
+                ? "…"
+                : posts.filter(
+                    (post) => post.published === (value === "published"),
+                  ).length
             }
             )
           </button>
@@ -265,12 +267,33 @@ function BlogManagement() {
       {/* Table */}
       <section className="mt-8">
         {isLoading ? (
-          <div className="text-sm text-ink/40">Loading posts...</div>
+          <AdminContentSkeleton
+            label="blog posts"
+            layout="responsive-table"
+            rows={4}
+            columns={6}
+            tableMinWidth={780}
+          />
+        ) : loadError ? (
+          <div
+            role="alert"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-600"
+          >
+            <span>{loadError}</span>
+            <button
+              type="button"
+              onClick={() => void loadPosts()}
+              className="rounded-lg border border-red-500/25 px-3 py-2 font-medium text-red-700 transition hover:bg-red-500/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+            >
+              Try again
+            </button>
+          </div>
         ) : (
           <BlogTable
             posts={posts.filter(
               (post) => post.published === (tab === "published"),
             )}
+            emptyMessage={`No ${tab === "published" ? "published posts" : "drafts"} yet.`}
             onView={handleView}
             onEdit={handleEdit}
             onDelete={(post) => {

@@ -10,6 +10,16 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.env
+.env.*
+!.env.example
+client_secret_*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.dump
+*.sql.gz
 *.local
 tests/artifacts/
 

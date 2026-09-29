@@ -70,6 +70,7 @@ function EmptyPreview({
     recommendations: "Recommendations will appear here when published.",
     skills:
       "Frontend, backend, and networking skills will appear here when published.",
+    resources: "Useful links will appear here when published.",
   };
 
   return (

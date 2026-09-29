@@ -134,7 +134,7 @@ export default function SkillMap({ items }: { items: PortfolioContent[] }) {
               <a
                 href={selectedSkill.url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="inline-flex min-h-11 items-center gap-2 text-sm text-ink/75 underline-offset-4 hover:text-ink hover:underline"
               >
                 Learn more

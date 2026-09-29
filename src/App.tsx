@@ -49,6 +49,9 @@ const RecommendationsManagement = lazy(
   () => import("./features/admin/manage/recommendations"),
 );
 const SkillsManagement = lazy(() => import("./features/admin/manage/skills"));
+const ResourcesManagement = lazy(
+  () => import("./features/admin/manage/resources"),
+);
 const SettingsManagement = lazy(
   () => import("./features/admin/manage/settings"),
 );
@@ -123,6 +126,7 @@ const router = createBrowserRouter([
         <RecommendationsManagement />,
       ),
       createProtectedRoute(adminRoutes.skills, <SkillsManagement />),
+      createProtectedRoute(adminRoutes.resources, <ResourcesManagement />),
       createProtectedRoute(adminRoutes.settings, <SettingsManagement />),
       createRoute(adminRoutes.fallback, <Navigate to="/" replace />),
       createRoute("*", <Navigate to="/" replace />),
